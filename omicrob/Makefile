@@ -1,9 +1,48 @@
+# name of your application
+APPLICATION = ocaml-nrf52
+
+# This has to be the absolute path to the RIOT base directory:
+RIOTBASE ?= $(CURDIR)/..
+BINDIR ?= $(CURDIR)/bin/nrf52840-mdk
+export RUNTIMEDIR ?= $(CURDIR)/src/byterun
+
+# Comment this out to disable code in RIOT that does safety checking
+# which is not needed in a production environment but helps in the
+# development process:
+DEVELHELP ?= 1
+
+# Change this to 0 show compiler invocation lines by default:
+QUIET ?= 0
+
+BOARD=nrf52840-mdk
+
+# USEMODULE += xtimer
+
+APPDIR = $(CURDIR)/example
+
+# LINKFLAGS = $(OCAMLDIR)/runtime/libcamlrun.a -lm
+
+include $(RIOTBASE)/Makefile.include
+
+# CFLAGS := $(subst \",",$(CFLAGS))
+# CFLAGS := $(subst ',,$(CFLAGS))
+CFLAGS := $(subst -Wall,,$(CFLAGS))
+CFLAGS := $(subst -Wstrict-prototypes,,$(CFLAGS))
+CFLAGS := $(subst -Wextra,,$(CFLAGS))
+CFLAGS := $(subst -Wold-style-definition,,$(CFLAGS))
+CFLAGS := $(subst -O3,,$(CFLAGS))
+CFLAGS := $(subst -O2,,$(CFLAGS))
+CFLAGS := $(subst -O1,,$(CFLAGS))
+CFLAGS += -Wno-format-nonliteral -Wno-strict-prototypes -lm -s
+
+# ----------------------------------------------------------------------------
+
 include etc/Makefile.conf
 
 all: internals $(TARGETS)
 
 internals: config
-	$(call compile, lib/extra)
+#	$(call compile, lib/extra)
 	$(call compile, src/bc2c)
 #	$(call compile, src/h15ppx)
 #	$(call compile, src/simulators/lcd)
@@ -14,6 +53,9 @@ internals: config
 	$(call compile, src/omicrob)
 #	$(call compile, ../RIOT-copy/ocaml-nrf52/ocaml/stdlib)
 #	$(call compile, src/stdlib)
+
+riot:
+	$(MAKE) -C $(RIOTBASE) -f Makefile.include link CFLAGS='$(CFLAGS)'
 
 avr: internals
 	$(call compile, targets/avr)
@@ -102,7 +144,7 @@ tests: all
 
 clean:
 	@rm -f *~ */*~ */*/*~ */*/*/*~
-	@rm -f bin/*
+	@rm -rf $(BINDIR)/*
 	$(call clean, src/bc2c)
 	$(call clean, src/h15ppx)
 	$(call clean, src/byterun)
@@ -113,7 +155,7 @@ clean:
 	$(call clean, src/omicrob)
 #	$(call clean, ../RIOT-copy/ocaml-nrf52/ocaml/stdlib)
 #	$(call clean, src/stdlib)
-	$(call clean, lib/extra)
+#	$(call clean, lib/extra)
 	$(call clean, targets/avr)
 	$(call clean, targets/pic32)
 
@@ -122,7 +164,8 @@ example:
 	./bin/omicrob -v example/test.cmo -o example/test.byte
 	./bin/omicrob -v example/test.byte -o example/test.c
 #	python3 example/extern.py
-	./bin/omicrob -v example/test.c -o example/test.elf
+#	./bin/omicrob -v example/test.c -o example/test.elf
+	$(MAKE) riot
 
 exampleclean:
 	rm -f example/test.byte example/test.cmo example/test.cmi example/test.c

@@ -1,4 +1,4 @@
-#include "arch-specific.h"
+#include "../simul/arch-specific.c"
 
 #ifndef VALUES_H
 #define VALUES_H

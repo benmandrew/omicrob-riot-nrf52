@@ -14,7 +14,7 @@
 
 #define OCAML_GC_MARK_AND_COMPACT
 
-#include </home/ben/omicrob/src/byterun/vm/values.h>
+#include </home/ben/omicrob-riot-nrf52/omicrob/src/byterun/vm/values.h>
 
 #define OCAML_ACC0                        0
 #define OCAML_ACC1                        1
@@ -371,7 +371,7 @@ PROGMEM opcode_t const ocaml_bytecode[OCAML_BYTECODE_BSIZE] = {
   /* 312 */  OCAML_STOP
 };
 
-#include </home/ben/omicrob/src/byterun/vm/runtime.c>
+#include </home/ben/omicrob-riot-nrf52/omicrob/src/byterun/vm/runtime.c>
 
 PROGMEM void * const ocaml_primitives[OCAML_PRIMITIVE_NUMBER] = {
   /*  0 */  (void *) &caml_gc_major,

@@ -1,9 +1,9 @@
 /* PC specific includes and functions */
 #include "arch-specific.h"
 
-#include "simul.c"
-#include "shared.c"
-#include "sf-regs.c"
+// #include "simul.c"
+// #include "shared.c"
+// #include "sf-regs.c"
 
 extern const char **global_argv; // used by simulator
 

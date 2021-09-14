@@ -79,6 +79,6 @@ ifeq (,$(filter -DDEVELHELP,$(CFLAGS)))
   endif
 endif
 
-CFLAGS += -I$(OCAMLDIR)/runtime -Wno-incompatible-pointer-types
+CFLAGS += -I$(RUNTIMEDIR) -Wno-incompatible-pointer-types
 # Add the optional flags that are not architecture/toolchain blacklisted
 CFLAGS += $(filter-out $(OPTIONAL_CFLAGS_BLACKLIST),$(OPTIONAL_CFLAGS))
