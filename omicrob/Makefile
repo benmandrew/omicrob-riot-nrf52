@@ -1,5 +1,5 @@
 # name of your application
-APPLICATION = ocaml-nrf52
+APPLICATION = omicrob-nrf52
 
 # This has to be the absolute path to the RIOT base directory:
 RIOTBASE ?= $(CURDIR)/..
@@ -18,7 +18,7 @@ BOARD=nrf52840-mdk
 
 # USEMODULE += xtimer
 
-APPDIR = $(CURDIR)/example
+export APPDIR = $(CURDIR)/example
 
 # LINKFLAGS = $(OCAMLDIR)/runtime/libcamlrun.a -lm
 
@@ -27,6 +27,7 @@ include $(RIOTBASE)/Makefile.include
 # CFLAGS := $(subst \",",$(CFLAGS))
 # CFLAGS := $(subst ',,$(CFLAGS))
 CFLAGS := $(subst -Wall,,$(CFLAGS))
+CFLAGS := $(subst -Werror,,$(CFLAGS))
 CFLAGS := $(subst -Wstrict-prototypes,,$(CFLAGS))
 CFLAGS := $(subst -Wextra,,$(CFLAGS))
 CFLAGS := $(subst -Wold-style-definition,,$(CFLAGS))
@@ -145,6 +146,7 @@ tests: all
 clean:
 	@rm -f *~ */*~ */*/*~ */*/*/*~
 	@rm -rf $(BINDIR)/*
+	@rm -f bin/omicrob
 	$(call clean, src/bc2c)
 	$(call clean, src/h15ppx)
 	$(call clean, src/byterun)
@@ -163,11 +165,15 @@ example:
 	./bin/omicrob -v -c example/test.ml
 	./bin/omicrob -v example/test.cmo -o example/test.byte
 	./bin/omicrob -v example/test.byte -o example/test.c
-#	python3 example/extern.py
+	python3 example/extern.py
+	rm example/test.c
+	cp src/byterun/simul/arch-specific.c example/arch-specific.c
 #	./bin/omicrob -v example/test.c -o example/test.elf
 	$(MAKE) riot
 
 exampleclean:
-	rm -f example/test.byte example/test.cmo example/test.cmi example/test.c
+	rm -f example/test.byte example/test.cmo example/test.cmi \
+		example/test.c example/arch-specific.c example/test_def.h \
+		example/test_ext.h
 
 .PHONY: all config install uninstall tests clean example exampleclean

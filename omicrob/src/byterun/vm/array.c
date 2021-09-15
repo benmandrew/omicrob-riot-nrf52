@@ -1,4 +1,4 @@
-#include "debug.h"
+// #include "debug.h"
 #include "gc.h"
 
 value caml_make_vect(value len, value init) {

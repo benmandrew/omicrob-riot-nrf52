@@ -1,5 +1,5 @@
 #include <string.h>
-#include "debug.h"
+// #include "debug.h"
 #include "values.h"
 #include "gc.h"
 #include "obj.h"

@@ -4,7 +4,7 @@
 #include <stdint.h>
 
 #include "values.h"
-#include "debug.h"
+// #include "debug.h"
 #include "fail.h"
 #include "str.h"
 #include "int32.h"

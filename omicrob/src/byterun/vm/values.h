@@ -1,7 +1,13 @@
-#include "../simul/arch-specific.c"
+
 
 #ifndef VALUES_H
 #define VALUES_H
+
+// #define PROGMEM
+
+// #include <stdio.h>
+// #include <inttypes.h>
+// #include <assert.h>
 
 /******************************************************************************/
 
@@ -14,6 +20,8 @@
 #else
 #error "Invalid virtual architecture, please define OCAML_VIRTUAL_ARCH"
 #endif
+
+// #include "arch-specific.h"
 
 /******************************************************************************/
 

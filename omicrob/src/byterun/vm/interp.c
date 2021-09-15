@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "debug.h"
+// #include "debug.h"
 #include "values.h"
 #include "fail.h"
 #include "gc.h"
