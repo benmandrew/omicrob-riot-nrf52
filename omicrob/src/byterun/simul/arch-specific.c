@@ -5,10 +5,10 @@
 // #include "shared.c"
 // #include "sf-regs.c"
 
-extern const char **global_argv; // used by simulator
+// extern const char **global_argv; // used by simulator
 
 void device_init(const char **argv) {
-  global_argv = argv;
+  // global_argv = argv;
 }
 
 #if DEBUG >= 1

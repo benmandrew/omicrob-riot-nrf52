@@ -459,7 +459,7 @@ include $(RIOTMAKE)/toolchain/$(TOOLCHAIN).inc.mk
 # overriding the core ldscripts
 LINKFLAGS += -L$(RIOTBASE)/core/ldscripts
 
-# LINKFLAGS += $(OCAMLDIR)/runtime/libcamlrun.a -lm
+LINKFLAGS += $(OCAMLDIR)/runtime/libcamlrun.a -lm
 
 # Tell ccache to pass the original file to the compiler, instead of passing the
 # preprocessed code. Without this setting, the compilation will fail with
