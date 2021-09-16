@@ -244,6 +244,7 @@ clean:
 	$(call clean, targets/avr)
 	$(call clean, targets/pic32)
 	$(MAKE) exampleclean
+	$(MAKE) -C ocaml clean
 
 example:
 	./bin/omicrob -v -c example/test.ml

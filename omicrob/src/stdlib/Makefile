@@ -4,11 +4,11 @@ BASES :=                                                         \
   char bytes bytesLabels string stringLabels                     \
   list listLabels map array arrayLabels uchar sys buffer random  \
   complex gc int32 int64 obj hashtbl set moreLabels queue sort   \
-  stack stdLabels printf
+  stack stdLabels
 
-MODULES := camlinternalFormatBasics camlinternalFormat stdlib $(BASES) camlinternalOO std_exit
+MODULES := stdlib $(BASES) camlinternalOO std_exit
 
-STDLIB_MODULES := camlinternalFormatBasics camlinternalFormat stdlib $(foreach m,$(BASES),stdlib__$(m)) camlinternalOO std_exit
+STDLIB_MODULES := stdlib $(foreach m,$(BASES),stdlib__$(m)) camlinternalOO std_exit
 
 MLS  := $(MODULES:=.ml)
 MLIS := $(MODULES:=.mli)
@@ -45,18 +45,6 @@ camlinternalOO.cmo: camlinternalOO.ml camlinternalOO.cmi
 	$(OCAMLC) -nostdlib -c -w @a-41 $<
 
 camlinternalOO.cmi: camlinternalOO.mli
-	$(OCAMLC) -nostdlib -c $<
-
-camlinternalFormatBasics.cmo: camlinternalFormatBasics.ml camlinternalFormatBasics.cmi
-	$(OCAMLC) -c -w @a-41 $<
-
-camlinternalFormatBasics.cmi: camlinternalFormatBasics.mli
-	$(OCAMLC) -c $<
-
-camlinternalFormat.cmo: camlinternalFormat.ml camlinternalFormat.cmi
-	$(OCAMLC) -nostdlib -c -w @a-41 $<
-
-camlinternalFormat.cmi: camlinternalFormat.mli
 	$(OCAMLC) -nostdlib -c $<
 
 std_exit.cmo: std_exit.ml std_exit.cmi

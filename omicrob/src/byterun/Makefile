@@ -19,6 +19,7 @@ byterun: $(TARGETS)
 $(LIB)/libcamlrun.a: $(OBJECTS)
 	@rm -f $@
 	cp $(OCAMLWHERE)/libcamlrun.a $@
+	chmod u+rw $(LIB)/libcamlrun.a 
 #	cp /Users/ben/Desktop/Projects/riot-ocaml/ocaml-nrf52/ocaml/runtime/libcamlrun.a $@
 	ar rs $@ $(OBJECTS)
 

@@ -28,13 +28,13 @@
 #include "caml/misc.h"
 
 /* returns a number of bytes (chars) */
-CAMLexport mlsize_t caml_string_length(value s)
-{
-  mlsize_t temp;
-  temp = Bosize_val(s) - 1;
-  CAMLassert (Byte (s, temp - Byte (s, temp)) == 0);
-  return temp - Byte (s, temp);
-}
+// CAMLexport mlsize_t caml_string_length(value s)
+// {
+//   mlsize_t temp;
+//   temp = Bosize_val(s) - 1;
+//   CAMLassert (Byte (s, temp - Byte (s, temp)) == 0);
+//   return temp - Byte (s, temp);
+// }
 
 /* returns a value that represents a number of bytes (chars) */
 CAMLprim value caml_ml_string_length(value s)

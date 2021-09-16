@@ -13,22 +13,18 @@
 (*                                                                        *)
 (**************************************************************************)
 
-(** Registering OCaml values with the C runtime.
+external big_endian : unit -> bool = "%big_endian"
+external word_size : unit -> int = "%word_size"
+external int_size : unit -> int = "%int_size"
+external max_wosize : unit -> int = "%max_wosize"
 
-   This module allows OCaml values to be registered with the C runtime
-   under a symbolic name, so that C code can later call back registered
-   OCaml functions, or raise registered OCaml exceptions.
-*)
+let big_endian = big_endian ()
+let word_size = word_size ()
+let int_size = int_size ()
+let max_array_length = max_wosize ()
+let max_string_length = word_size / 8 * max_array_length - 1
 
-val register : string -> 'a -> unit
-(** [Callback.register n v] registers the value [v] under
-   the name [n]. C code can later retrieve a handle to [v]
-   by calling [caml_named_value(n)]. *)
+(*external time: unit -> (float [@unboxed]) =
+  "caml_sys_time" "caml_sys_time_unboxed" [@@noalloc]*) (* TODO *)
 
-val register_exception : string -> exn -> unit
-(** [Callback.register_exception n exn] registers the
-   exception contained in the exception value [exn]
-   under the name [n]. C code can later retrieve a handle to
-   the exception by calling [caml_named_value(n)]. The exception
-   value thus obtained is suitable for passing as first argument
-   to [raise_constant] or [raise_with_arg]. *)
+let ocaml_version = "4.06.0"

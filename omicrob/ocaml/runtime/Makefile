@@ -19,23 +19,37 @@ include $(ROOTDIR)/Makefile.common
 
 # Lists of source files
 
+# BYTECODE_C_SOURCES := $(addsuffix .c, \
+#   interp misc stacks fix_code startup_aux startup_byt freelist major_gc \
+#   minor_gc memory alloc roots_byt globroots fail_byt signals \
+#   signals_byt printexc backtrace_byt backtrace compare ints eventlog \
+#   floats str array io extern intern hash sys meta parsing gc_ctrl md5 obj \
+#   lexing callback debugger weak compact finalise custom dynlink \
+#   afl $(UNIX_OR_WIN32) bigarray main memprof domain \
+#   skiplist codefrag)
+
+# NATIVE_C_SOURCES := $(addsuffix .c, \
+#   startup_aux startup_nat main fail_nat roots_nat signals \
+#   signals_nat misc freelist major_gc minor_gc memory alloc compare ints \
+#   floats str array io extern intern hash sys parsing gc_ctrl eventlog md5 obj \
+#   lexing $(UNIX_OR_WIN32) printexc callback weak compact finalise custom \
+#   globroots backtrace_nat backtrace dynlink_nat debugger meta \
+#   dynlink clambda_checks afl bigarray \
+#   memprof domain skiplist codefrag)
+
 BYTECODE_C_SOURCES := $(addsuffix .c, \
-  interp misc stacks fix_code startup_aux startup_byt freelist major_gc \
-  minor_gc memory alloc roots_byt globroots fail_byt signals \
-  signals_byt printexc backtrace_byt backtrace compare ints eventlog \
-  floats str array io extern intern hash sys meta parsing gc_ctrl md5 obj \
-  lexing callback debugger weak compact finalise custom dynlink \
-  afl $(UNIX_OR_WIN32) bigarray main memprof domain \
-  skiplist codefrag)
+	io gc_ctrl misc sys callback memory signals signals_byt $(UNIX_OR_WIN32) \
+	custom alloc domain freelist compact minor_gc major_gc fail_byt str \
+	codefrag fix_code interp globroots memprof finalise startup_aux \
+	startup_nat roots_byt weak debugger dynlink skiplist floats stacks md5 \
+	backtrace_byt backtrace)
 
 NATIVE_C_SOURCES := $(addsuffix .c, \
-  startup_aux startup_nat main fail_nat roots_nat signals \
-  signals_nat misc freelist major_gc minor_gc memory alloc compare ints \
-  floats str array io extern intern hash sys parsing gc_ctrl eventlog md5 obj \
-  lexing $(UNIX_OR_WIN32) printexc callback weak compact finalise custom \
-  globroots backtrace_nat backtrace dynlink_nat debugger meta \
-  dynlink clambda_checks afl bigarray \
-  memprof domain skiplist codefrag)
+	io gc_ctrl misc sys callback memory signals signals_nat $(UNIX_OR_WIN32) \
+	custom alloc domain freelist compact minor_gc major_gc fail_nat str \
+	codefrag globroots memprof finalise startup_aux startup_nat roots_nat weak \
+	debugger dynlink_nat dynlink skiplist floats md5 backtrace_nat backtrace)
+
 
 GENERATED_HEADERS := caml/opnames.h caml/version.h caml/jumptbl.h
 CONFIG_HEADERS := caml/m.h caml/s.h

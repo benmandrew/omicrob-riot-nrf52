@@ -58,12 +58,7 @@ let push =
 let peek q =
   match q.first with
   | Nil -> raise Empty
-  | Cons { content } -> content
-
-let peek_opt q =
-  match q.first with
-  | Nil -> None
-  | Cons { content } -> Some content
+  | Cons { content; _ } -> content
 
 let top =
   peek
@@ -78,17 +73,6 @@ let take q =
     q.length <- q.length - 1;
     q.first <- next;
     content
-
-let take_opt q =
-  match q.first with
-  | Nil -> None
-  | Cons { content; next = Nil } ->
-    clear q;
-    Some content
-  | Cons { content; next } ->
-    q.length <- q.length - 1;
-    q.first <- next;
-    Some content
 
 let pop =
   take
@@ -146,19 +130,3 @@ let transfer q1 q2 =
       last.next <- q1.first;
       q2.last <- q1.last;
       clear q1
-
-(** {1 Iterators} *)
-
-let to_seq q =
-  let rec aux c () = match c with
-    | Nil -> Seq.Nil
-    | Cons { content=x; next; } -> Seq.Cons (x, aux next)
-  in
-  aux q.first
-
-let add_seq q i = Seq.iter (fun x -> push x q) i
-
-let of_seq g =
-  let q = create() in
-  add_seq q g;
-  q

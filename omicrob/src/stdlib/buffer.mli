@@ -18,16 +18,7 @@
    This module implements buffers that automatically expand
    as necessary.  It provides accumulative concatenation of strings
    in quasi-linear time (instead of quadratic time when strings are
-   concatenated pairwise). For example:
-
-{[
-     let concat_strings ss =
-       let b = Buffer.create 16 in
-         List.iter (Buffer.add_string b) ss;
-         Buffer.contents b
-
-]}
-
+   concatenated pairwise).
 *)
 
 type t
@@ -59,22 +50,23 @@ val to_bytes : t -> bytes
 val sub : t -> int -> int -> string
 (** [Buffer.sub b off len] returns a copy of [len] bytes from the
     current contents of the buffer [b], starting at offset [off].
-    @raise Invalid_argument if [srcoff] and [len] do not designate a valid
+
+    Raise [Invalid_argument] if [srcoff] and [len] do not designate a valid
     range of [b]. *)
 
 val blit : t -> int -> bytes -> int -> int -> unit
 (** [Buffer.blit src srcoff dst dstoff len] copies [len] characters from
    the current contents of the buffer [src], starting at offset [srcoff]
    to [dst], starting at character [dstoff].
-   @raise Invalid_argument if [srcoff] and [len] do not designate a valid
+
+   Raise [Invalid_argument] if [srcoff] and [len] do not designate a valid
    range of [src], or if [dstoff] and [len] do not designate a valid
    range of [dst].
    @since 3.11.2
 *)
 
 val nth : t -> int -> char
-(** Get the n-th character of the buffer.
-    @raise Invalid_argument if
+(** Get the n-th character of the buffer. Raise [Invalid_argument] if
     index out of bounds *)
 
 val length : t -> int
@@ -142,150 +134,15 @@ val add_substitute : t -> (string -> string) -> string -> unit
    matching parentheses or curly brackets.
    An escaped [$] character is a [$] that immediately follows a backslash
    character; it then stands for a plain [$].
-   @raise Not_found if the closing character of a parenthesized variable
+   Raise [Not_found] if the closing character of a parenthesized variable
    cannot be found. *)
 
 val add_buffer : t -> t -> unit
 (** [add_buffer b1 b2] appends the current contents of buffer [b2]
    at the end of buffer [b1].  [b2] is not modified. *)
 
-val add_channel : t -> in_channel -> int -> unit
-(** [add_channel b ic n] reads at most [n] characters from the
-   input channel [ic] and stores them at the end of buffer [b].
-   @raise End_of_file if the channel contains fewer than [n]
-   characters. In this case, the characters are still added to
-   the buffer, so as to avoid loss of data. *)
-
-val output_buffer : out_channel -> t -> unit
-(** [output_buffer oc b] writes the current contents of buffer [b]
-   on the output channel [oc]. *)
-
 val truncate : t -> int -> unit
 (** [truncate b len] truncates the length of [b] to [len]
   Note: the internal byte sequence is not shortened.
-  @raise Invalid_argument if [len < 0] or [len > length b].
+  Raise [Invalid_argument] if [len < 0] or [len > length b].
   @since 4.05.0 *)
-
-(** {1 Iterators} *)
-
-val to_seq : t -> char Seq.t
-(** Iterate on the buffer, in increasing order.
-    Modification of the buffer during iteration is undefined behavior.
-    @since 4.07 *)
-
-val to_seqi : t -> (int * char) Seq.t
-(** Iterate on the buffer, in increasing order, yielding indices along chars.
-    Modification of the buffer during iteration is undefined behavior.
-    @since 4.07 *)
-
-val add_seq : t -> char Seq.t -> unit
-(** Add chars to the buffer
-    @since 4.07 *)
-
-val of_seq : char Seq.t -> t
-(** Create a buffer from the generator
-    @since 4.07 *)
-
-(** {1 Binary encoding of integers} *)
-
-(** The functions in this section append binary encodings of integers
-    to buffers.
-
-    Little-endian (resp. big-endian) encoding means that least
-    (resp. most) significant bytes are stored first.  Big-endian is
-    also known as network byte order.  Native-endian encoding is
-    either little-endian or big-endian depending on {!Sys.big_endian}.
-
-    32-bit and 64-bit integers are represented by the [int32] and
-    [int64] types, which can be interpreted either as signed or
-    unsigned numbers.
-
-    8-bit and 16-bit integers are represented by the [int] type,
-    which has more bits than the binary encoding.  Functions that
-    encode these values truncate their inputs to their least
-    significant bytes.
-*)
-
-val add_uint8 : t -> int -> unit
-(** [add_uint8 b i] appends a binary unsigned 8-bit integer [i] to
-    [b].
-    @since 4.08
-*)
-
-val add_int8 : t -> int -> unit
-(** [add_int8 b i] appends a binary signed 8-bit integer [i] to
-    [b].
-    @since 4.08
-*)
-
-val add_uint16_ne : t -> int -> unit
-(** [add_uint16_ne b i] appends a binary native-endian unsigned 16-bit
-    integer [i] to [b].
-    @since 4.08
-*)
-
-val add_uint16_be : t -> int -> unit
-(** [add_uint16_be b i] appends a binary big-endian unsigned 16-bit
-    integer [i] to [b].
-    @since 4.08
-*)
-
-val add_uint16_le : t -> int -> unit
-(** [add_uint16_le b i] appends a binary little-endian unsigned 16-bit
-    integer [i] to [b].
-    @since 4.08
-*)
-
-val add_int16_ne : t -> int -> unit
-(** [add_int16_ne b i] appends a binary native-endian signed 16-bit
-    integer [i] to [b].
-    @since 4.08
-*)
-
-val add_int16_be : t -> int -> unit
-(** [add_int16_be b i] appends a binary big-endian signed 16-bit
-    integer [i] to [b].
-    @since 4.08
-*)
-
-val add_int16_le : t -> int -> unit
-(** [add_int16_le b i] appends a binary little-endian signed 16-bit
-    integer [i] to [b].
-    @since 4.08
-*)
-
-val add_int32_ne : t -> int32 -> unit
-(** [add_int32_ne b i] appends a binary native-endian 32-bit integer
-    [i] to [b].
-    @since 4.08
-*)
-
-val add_int32_be : t -> int32 -> unit
-(** [add_int32_be b i] appends a binary big-endian 32-bit integer
-    [i] to [b].
-    @since 4.08
-*)
-
-val add_int32_le : t -> int32 -> unit
-(** [add_int32_le b i] appends a binary little-endian 32-bit integer
-    [i] to [b].
-    @since 4.08
-*)
-
-val add_int64_ne  : t -> int64 -> unit
-(** [add_int64_ne b i] appends a binary native-endian 64-bit integer
-    [i] to [b].
-    @since 4.08
-*)
-
-val add_int64_be : t -> int64 -> unit
-(** [add_int64_be b i] appends a binary big-endian 64-bit integer
-    [i] to [b].
-    @since 4.08
-*)
-
-val add_int64_le : t -> int64 -> unit
-(** [add_int64_ne b i] appends a binary little-endian 64-bit integer
-    [i] to [b].
-    @since 4.08
-*)

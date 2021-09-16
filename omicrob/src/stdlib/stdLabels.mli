@@ -15,19 +15,12 @@
 
 (** Standard labeled libraries.
 
-   This meta-module provides versions of the {!Array}, {!Bytes},
-   {!List} and {!String} modules where function arguments are
-   systematically labeled.  It is intended to be opened at the top of
-   source files, as shown below.
+   This meta-module provides labelized version of the {!Array},
+   {!Bytes}, {!List} and {!String} modules.
 
-   {[
-     open StdLabels
-
-     let to_upper = String.map ~f:Char.uppercase_ascii
-     let seq len = List.init ~f:(function i -> i) ~len
-     let everything = Array.create_matrix ~dimx:42 ~dimy:42 42
-   ]}
-
+   They only differ by their labels. Detailed interfaces can be found
+   in [arrayLabels.mli], [bytesLabels.mli], [listLabels.mli]
+   and [stringLabels.mli].
 *)
 
 module Array = ArrayLabels

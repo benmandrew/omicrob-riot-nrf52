@@ -1,28 +1,30 @@
 
 from typing import List
 
-SEARCHSTRING = "#include </home/ben/omicrob-riot-nrf52/omicrob/src/byterun/vm/runtime.c>"
+RUNTIMEINCLUDESTR = "/omicrob/src/byterun/vm/runtime.c>"
+BYTECODESTR = "PROGMEM void * const ocaml_primitives[OCAML_PRIMITIVE_NUMBER]"
 
-variables = [
+VARIABLES = [
   "ocaml_stack", "ocaml_ram_heap", "ocaml_ram_global_data",
   "ocaml_flash_heap", "ocaml_initial_static_heap",
   "ocaml_initial_stack", "ocaml_flash_global_data",
   "ocaml_bytecode", "ocaml_primitives"]
 
-def getCamlPrimitives(s: str) -> List[str]:
-  idx = s.find(SEARCHSTRING)
-  l = s[idx + len(SEARCHSTRING):].split(",\n")[:-1]
-  return [r.split("&")[1] for r in l]
+def getCamlPrimitives(ls: List[str]) -> List[str]:
+  idx = ls.index(next((l for l in ls if BYTECODESTR in l), None))
+  l = ls[idx + 1:-2]
+  splits = [r.split("&") for r in l]
+  for split in splits:
+    if len(split) != 2:
+      print("Malformed primitive:", split)
+      raise Exception
+  return [split[1][:-1] for split in splits]
 
-def generateExternalSymbols(symbols: List[str]) -> str:
-  return "\n".join(
-    ["extern value {}();".format(symbol) for symbol in symbols])
-
-def insertExternalSymbols(s: str) -> str:
-  symbols = getCamlPrimitives(s)
-  sp = s.split(SEARCHSTRING)
-  ext = generateExternalSymbols(symbols)
-  return "{}{}\n\n{}{}".format(sp[0], SEARCHSTRING, ext, sp[1])
+def insertExternalSymbols(ls: List[str]) -> List[str]:
+  symbols = getCamlPrimitives(ls)
+  idx = ls.index(next((l for l in ls if RUNTIMEINCLUDESTR in l), None))
+  ext = ["extern value {}();".format(symbol) for symbol in symbols]
+  return ls[:idx + 1] + ext + ls[idx + 1:]
 
 def extractHeader(ls: List[str], variable: str) -> str:
   line = next((l for l in ls if variable in l), None)
@@ -47,14 +49,17 @@ def createHeaderFile(ls: List[str]) -> None:
 def main():
   s = ""
   with open("example/test.c", "r") as f:
-    s = f.read()
+    s = f.read().split("\n")
   n = insertExternalSymbols(s)
 
-  ls = n.split("\n")
-  defineIdx = createHeaderFile(ls)
+  defineIdx = createHeaderFile(n)
 
   out = "#ifndef __TEST_EXT__\n#define __TEST_EXT__\n\n{}\n#endif".format(
-    "\n".join(["#include \"test_def.h\""] + ls[defineIdx:]))
+    "\n".join(
+      [
+        "#include \"../ocaml/runtime/caml/compatibility.h\"",
+        "#include \"test_def.h\""
+        ] + n[defineIdx:]))
 
   with open("example/test_ext.h", "w") as f:
     f.write(out)

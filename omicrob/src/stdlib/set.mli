@@ -13,9 +13,6 @@
 (*                                                                        *)
 (**************************************************************************)
 
-(* NOTE: If this file is set.mli, do not edit it directly! Instead,
-   edit templates/set.template.mli and run tools/sync_stdlib_docs *)
-
 (** Sets over ordered types.
 
    This module implements the set data structure, given a total ordering
@@ -61,7 +58,7 @@ module type OrderedType =
           Example: a suitable ordering function is the generic structural
           comparison function {!Stdlib.compare}. *)
   end
-(** Input signature of the functor {!Make}. *)
+(** Input signature of the functor {!Set.Make}. *)
 
 module type S =
   sig
@@ -101,13 +98,8 @@ module type S =
     val inter: t -> t -> t
     (** Set intersection. *)
 
-    val disjoint: t -> t -> bool
-    (** Test if two sets are disjoint.
-        @since 4.08.0 *)
-
     val diff: t -> t -> t
-    (** Set difference: [diff s1 s2] contains the elements of [s1]
-       that are not in [s2]. *)
+    (** Set difference. *)
 
     val compare: t -> t -> int
     (** Total ordering between sets. Can be used as the ordering function
@@ -139,45 +131,29 @@ module type S =
        @since 4.04.0 *)
 
     val fold: (elt -> 'a -> 'a) -> t -> 'a -> 'a
-    (** [fold f s init] computes [(f xN ... (f x2 (f x1 init))...)],
+    (** [fold f s a] computes [(f xN ... (f x2 (f x1 a))...)],
        where [x1 ... xN] are the elements of [s], in increasing order. *)
 
     val for_all: (elt -> bool) -> t -> bool
-    (** [for_all f s] checks if all elements of the set
-       satisfy the predicate [f]. *)
+    (** [for_all p s] checks if all elements of the set
+       satisfy the predicate [p]. *)
 
     val exists: (elt -> bool) -> t -> bool
-    (** [exists f s] checks if at least one element of
-       the set satisfies the predicate [f]. *)
+    (** [exists p s] checks if at least one element of
+       the set satisfies the predicate [p]. *)
 
     val filter: (elt -> bool) -> t -> t
-    (** [filter f s] returns the set of all elements in [s]
-       that satisfy predicate [f]. If [f] satisfies every element in [s],
+    (** [filter p s] returns the set of all elements in [s]
+       that satisfy predicate [p]. If [p] satisfies every element in [s],
        [s] is returned unchanged (the result of the function is then
        physically equal to [s]).
        @before 4.03 Physical equality was not ensured.*)
 
-    val filter_map: (elt -> elt option) -> t -> t
-    (** [filter_map f s] returns the set of all [v] such that
-        [f x = Some v] for some element [x] of [s].
-
-       For example,
-       {[filter_map (fun n -> if n mod 2 = 0 then Some (n / 2) else None) s]}
-       is the set of halves of the even elements of [s].
-
-       If no element of [s] is changed or dropped by [f] (if
-       [f x = Some x] for each element [x]), then
-       [s] is returned unchanged: the result of the function
-       is then physically equal to [s].
-
-       @since 4.11.0
-     *)
-
     val partition: (elt -> bool) -> t -> t * t
-    (** [partition f s] returns a pair of sets [(s1, s2)], where
+    (** [partition p s] returns a pair of sets [(s1, s2)], where
        [s1] is the set of all the elements of [s] that satisfy the
-       predicate [f], and [s2] is the set of all the elements of
-       [s] that do not satisfy [f]. *)
+       predicate [p], and [s2] is the set of all the elements of
+       [s] that do not satisfy [p]. *)
 
     val cardinal: t -> int
     (** Return the number of elements of a set. *)
@@ -186,7 +162,7 @@ module type S =
     (** Return the list of all elements of the given set.
        The returned list is sorted in increasing order with respect
        to the ordering [Ord.compare], where [Ord] is the argument
-       given to {!Make}. *)
+       given to {!Set.Make}. *)
 
     val min_elt: t -> elt
     (** Return the smallest element of the given set
@@ -201,11 +177,11 @@ module type S =
     *)
 
     val max_elt: t -> elt
-    (** Same as {!S.min_elt}, but returns the largest element of the
+    (** Same as {!Set.S.min_elt}, but returns the largest element of the
        given set. *)
 
     val max_elt_opt: t -> elt option
-    (** Same as {!S.min_elt_opt}, but returns the largest element of the
+    (** Same as {!Set.S.min_elt_opt}, but returns the largest element of the
         given set.
         @since 4.05
     *)
@@ -257,9 +233,9 @@ module type S =
        *)
 
     val find_first_opt: (elt -> bool) -> t -> elt option
-    (** [find_first_opt f s], where [f] is a monotonically increasing
-       function, returns an option containing the lowest element [e] of [s]
-       such that [f e], or [None] if no such element exists.
+    (** [find_first_opt f s], where [f] is a monotonically increasing function,
+       returns an option containing the lowest element [e] of [s] such that
+       [f e], or [None] if no such element exists.
         @since 4.05
        *)
 
@@ -271,9 +247,9 @@ module type S =
        *)
 
     val find_last_opt: (elt -> bool) -> t -> elt option
-    (** [find_last_opt f s], where [f] is a monotonically decreasing
-       function, returns an option containing the highest element [e] of [s]
-       such that [f e], or [None] if no such element exists.
+    (** [find_last_opt f s], where [f] is a monotonically decreasing function,
+       returns an option containing the highest element [e] of [s] such that
+       [f e], or [None] if no such element exists.
         @since 4.05
        *)
 
@@ -282,31 +258,8 @@ module type S =
         This is usually more efficient than folding [add] over the list,
         except perhaps for lists with many duplicated elements.
         @since 4.02.0 *)
-
-    (** {1 Iterators} *)
-
-    val to_seq_from : elt -> t -> elt Seq.t
-    (** [to_seq_from x s] iterates on a subset of the elements of [s]
-        in ascending order, from [x] or above.
-        @since 4.07 *)
-
-    val to_seq : t -> elt Seq.t
-    (** Iterate on the whole set, in ascending order
-        @since 4.07 *)
-
-    val to_rev_seq : t -> elt Seq.t
-    (** Iterate on the whole set, in descending order
-        @since 4.12 *)
-
-    val add_seq : elt Seq.t -> t -> t
-    (** Add the given elements to the set, in order.
-        @since 4.07 *)
-
-    val of_seq : elt Seq.t -> t
-    (** Build a set from the given bindings
-        @since 4.07 *)
   end
-(** Output signature of the functor {!Make}. *)
+(** Output signature of the functor {!Set.Make}. *)
 
 module Make (Ord : OrderedType) : S with type elt = Ord.t
 (** Functor building an implementation of the set structure

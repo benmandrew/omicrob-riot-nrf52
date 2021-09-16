@@ -76,7 +76,7 @@ check_command "cp"
 
 # check_directory "/Users/ben/.opam/default/lib/obytelib" "the OByteLib library (ex: opam install obytelib)"
 
-OBYTELIB="$(ocamlc -where)/../obytelib"
+OBYTELIB="/Users/ben/.opam/default/lib/obytelib"
 check_directory "$OBYTELIB" "the OByteLib library (ex: opam install obytelib)"
 
 ################################################################################

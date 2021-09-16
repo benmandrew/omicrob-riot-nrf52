@@ -22,7 +22,7 @@ module type OrderedType =
 module type S =
   sig
     type key
-    type !+'a t
+    type +'a t
     val empty: 'a t
     val is_empty: 'a t -> bool
     val mem:  key -> 'a t -> bool
@@ -40,7 +40,6 @@ module type S =
     val for_all: (key -> 'a -> bool) -> 'a t -> bool
     val exists: (key -> 'a -> bool) -> 'a t -> bool
     val filter: (key -> 'a -> bool) -> 'a t -> 'a t
-    val filter_map: (key -> 'a -> 'b option) -> 'a t -> 'b t
     val partition: (key -> 'a -> bool) -> 'a t -> 'a t * 'a t
     val cardinal: 'a t -> int
     val bindings: 'a t -> (key * 'a) list
@@ -59,11 +58,6 @@ module type S =
     val find_last_opt: (key -> bool) -> 'a t -> (key * 'a) option
     val map: ('a -> 'b) -> 'a t -> 'b t
     val mapi: (key -> 'a -> 'b) -> 'a t -> 'b t
-    val to_seq : 'a t -> (key * 'a) Seq.t
-    val to_rev_seq : 'a t -> (key * 'a) Seq.t
-    val to_seq_from : key -> 'a t -> (key * 'a) Seq.t
-    val add_seq : (key * 'a) Seq.t -> 'a t -> 'a t
-    val of_seq : (key * 'a) Seq.t -> 'a t
   end
 
 module Make(Ord: OrderedType) = struct
@@ -76,7 +70,7 @@ module Make(Ord: OrderedType) = struct
 
     let height = function
         Empty -> 0
-      | Node {h} -> h
+      | Node {h;_} -> h
 
     let create l x d r =
       let hl = height l and hr = height r in
@@ -85,30 +79,30 @@ module Make(Ord: OrderedType) = struct
     let singleton x d = Node{l=Empty; v=x; d; r=Empty; h=1}
 
     let bal l x d r =
-      let hl = match l with Empty -> 0 | Node {h} -> h in
-      let hr = match r with Empty -> 0 | Node {h} -> h in
+      let hl = match l with Empty -> 0 | Node {h;_} -> h in
+      let hr = match r with Empty -> 0 | Node {h;_} -> h in
       if hl > hr + 2 then begin
         match l with
           Empty -> invalid_arg "Map.bal"
-        | Node{l=ll; v=lv; d=ld; r=lr} ->
+        | Node{l=ll; v=lv; d=ld; r=lr; _} ->
             if height ll >= height lr then
               create ll lv ld (create lr x d r)
             else begin
               match lr with
                 Empty -> invalid_arg "Map.bal"
-              | Node{l=lrl; v=lrv; d=lrd; r=lrr}->
+              | Node{l=lrl; v=lrv; d=lrd; r=lrr; _}->
                   create (create ll lv ld lrl) lrv lrd (create lrr x d r)
             end
       end else if hr > hl + 2 then begin
         match r with
           Empty -> invalid_arg "Map.bal"
-        | Node{l=rl; v=rv; d=rd; r=rr} ->
+        | Node{l=rl; v=rv; d=rd; r=rr; _} ->
             if height rr >= height rl then
               create (create l x d rl) rv rd rr
             else begin
               match rl with
                 Empty -> invalid_arg "Map.bal"
-              | Node{l=rll; v=rlv; d=rld; r=rlr} ->
+              | Node{l=rll; v=rlv; d=rld; r=rlr; _} ->
                   create (create l x d rll) rlv rld (create rlr rv rd rr)
             end
       end else
@@ -116,7 +110,7 @@ module Make(Ord: OrderedType) = struct
 
     let empty = Empty
 
-    let is_empty = function Empty -> true | _ -> false
+    let is_empty = function Empty -> true | Node _ -> false
 
     let rec add x data = function
         Empty ->
@@ -135,7 +129,7 @@ module Make(Ord: OrderedType) = struct
     let rec find x = function
         Empty ->
           raise Not_found
-      | Node {l; v; d; r} ->
+      | Node {l; v; d; r; _} ->
           let c = Ord.compare x v in
           if c = 0 then d
           else find x (if c < 0 then l else r)
@@ -143,7 +137,7 @@ module Make(Ord: OrderedType) = struct
     let rec find_first_aux v0 d0 f = function
         Empty ->
           (v0, d0)
-      | Node {l; v; d; r} ->
+      | Node {l; v; d; r; _} ->
           if f v then
             find_first_aux v d f l
           else
@@ -152,7 +146,7 @@ module Make(Ord: OrderedType) = struct
     let rec find_first f = function
         Empty ->
           raise Not_found
-      | Node {l; v; d; r} ->
+      | Node {l; v; d; r; _} ->
           if f v then
             find_first_aux v d f l
           else
@@ -161,7 +155,7 @@ module Make(Ord: OrderedType) = struct
     let rec find_first_opt_aux v0 d0 f = function
         Empty ->
           Some (v0, d0)
-      | Node {l; v; d; r} ->
+      | Node {l; v; d; r; _} ->
           if f v then
             find_first_opt_aux v d f l
           else
@@ -170,7 +164,7 @@ module Make(Ord: OrderedType) = struct
     let rec find_first_opt f = function
         Empty ->
           None
-      | Node {l; v; d; r} ->
+      | Node {l; v; d; r; _} ->
           if f v then
             find_first_opt_aux v d f l
           else
@@ -179,7 +173,7 @@ module Make(Ord: OrderedType) = struct
     let rec find_last_aux v0 d0 f = function
         Empty ->
           (v0, d0)
-      | Node {l; v; d; r} ->
+      | Node {l; v; d; r; _} ->
           if f v then
             find_last_aux v d f r
           else
@@ -188,7 +182,7 @@ module Make(Ord: OrderedType) = struct
     let rec find_last f = function
         Empty ->
           raise Not_found
-      | Node {l; v; d; r} ->
+      | Node {l; v; d; r; _} ->
           if f v then
             find_last_aux v d f r
           else
@@ -197,7 +191,7 @@ module Make(Ord: OrderedType) = struct
     let rec find_last_opt_aux v0 d0 f = function
         Empty ->
           Some (v0, d0)
-      | Node {l; v; d; r} ->
+      | Node {l; v; d; r; _} ->
           if f v then
             find_last_opt_aux v d f r
           else
@@ -206,7 +200,7 @@ module Make(Ord: OrderedType) = struct
     let rec find_last_opt f = function
         Empty ->
           None
-      | Node {l; v; d; r} ->
+      | Node {l; v; d; r; _} ->
           if f v then
             find_last_opt_aux v d f r
           else
@@ -215,7 +209,7 @@ module Make(Ord: OrderedType) = struct
     let rec find_opt x = function
         Empty ->
           None
-      | Node {l; v; d; r} ->
+      | Node {l; v; d; r; _} ->
           let c = Ord.compare x v in
           if c = 0 then Some d
           else find_opt x (if c < 0 then l else r)
@@ -223,47 +217,47 @@ module Make(Ord: OrderedType) = struct
     let rec mem x = function
         Empty ->
           false
-      | Node {l; v; r} ->
+      | Node {l; v; r; _} ->
           let c = Ord.compare x v in
           c = 0 || mem x (if c < 0 then l else r)
 
     let rec min_binding = function
         Empty -> raise Not_found
-      | Node {l=Empty; v; d} -> (v, d)
-      | Node {l} -> min_binding l
+      | Node {l=Empty; v; d; _} -> (v, d)
+      | Node {l; _} -> min_binding l
 
     let rec min_binding_opt = function
         Empty -> None
-      | Node {l=Empty; v; d} -> Some (v, d)
-      | Node {l}-> min_binding_opt l
+      | Node {l=Empty; v; d; _} -> Some (v, d)
+      | Node {l; _}-> min_binding_opt l
 
     let rec max_binding = function
         Empty -> raise Not_found
-      | Node {v; d; r=Empty} -> (v, d)
-      | Node {r} -> max_binding r
+      | Node {v; d; r=Empty; _} -> (v, d)
+      | Node {r; _} -> max_binding r
 
     let rec max_binding_opt = function
         Empty -> None
-      | Node {v; d; r=Empty} -> Some (v, d)
-      | Node {r} -> max_binding_opt r
+      | Node {v; d; r=Empty; _} -> Some (v, d)
+      | Node {r; _} -> max_binding_opt r
 
     let rec remove_min_binding = function
         Empty -> invalid_arg "Map.remove_min_elt"
-      | Node {l=Empty; r} -> r
-      | Node {l; v; d; r} -> bal (remove_min_binding l) v d r
+      | Node {l=Empty; r; _} -> r
+      | Node {l; v; d; r; _} -> bal (remove_min_binding l) v d r
 
     let merge t1 t2 =
       match (t1, t2) with
         (Empty, t) -> t
       | (t, Empty) -> t
-      | (_, _) ->
+      | (Node _, Node _) ->
           let (x, d) = min_binding t2 in
           bal t1 x d (remove_min_binding t2)
 
     let rec remove x = function
         Empty ->
           Empty
-      | (Node {l; v; d; r} as m) ->
+      | (Node {l; v; d; r; _} as m) ->
           let c = Ord.compare x v in
           if c = 0 then merge l r
           else if c < 0 then
@@ -293,7 +287,7 @@ module Make(Ord: OrderedType) = struct
 
     let rec iter f = function
         Empty -> ()
-      | Node {l; v; d; r} ->
+      | Node {l; v; d; r; _} ->
           iter f l; f v d; iter f r
 
     let rec map f = function
@@ -317,16 +311,16 @@ module Make(Ord: OrderedType) = struct
     let rec fold f m accu =
       match m with
         Empty -> accu
-      | Node {l; v; d; r} ->
+      | Node {l; v; d; r; _} ->
           fold f r (f v d (fold f l accu))
 
     let rec for_all p = function
         Empty -> true
-      | Node {l; v; d; r} -> p v d && for_all p l && for_all p r
+      | Node {l; v; d; r; _} -> p v d && for_all p l && for_all p r
 
     let rec exists p = function
         Empty -> false
-      | Node {l; v; d; r} -> p v d || exists p l || exists p r
+      | Node {l; v; d; r; _} -> p v d || exists p l || exists p r
 
     (* Beware: those two functions assume that the added k is *strictly*
        smaller (or bigger) than all the present keys in the tree; it
@@ -338,12 +332,12 @@ module Make(Ord: OrderedType) = struct
 
     let rec add_min_binding k x = function
       | Empty -> singleton k x
-      | Node {l; v; d; r} ->
+      | Node {l; v; d; r; _} ->
         bal (add_min_binding k x l) v d r
 
     let rec add_max_binding k x = function
       | Empty -> singleton k x
-      | Node {l; v; d; r} ->
+      | Node {l; v; d; r; _} ->
         bal l v d (add_max_binding k x r)
 
     (* Same as create and bal, but no assumptions are made on the
@@ -353,8 +347,7 @@ module Make(Ord: OrderedType) = struct
       match (l, r) with
         (Empty, _) -> add_min_binding v d r
       | (_, Empty) -> add_max_binding v d l
-      | (Node{l=ll; v=lv; d=ld; r=lr; h=lh},
-         Node{l=rl; v=rv; d=rd; r=rr; h=rh}) ->
+      | (Node{l=ll; v=lv; d=ld; r=lr; h=lh}, Node{l=rl; v=rv; d=rd; r=rr; h=rh}) ->
           if lh > rh + 2 then bal ll lv ld (join lr v d r) else
           if rh > lh + 2 then bal (join l v d rl) rv rd rr else
           create l v d r
@@ -367,7 +360,7 @@ module Make(Ord: OrderedType) = struct
       match (t1, t2) with
         (Empty, t) -> t
       | (t, Empty) -> t
-      | (_, _) ->
+      | (Node _, Node _) ->
           let (x, d) = min_binding t2 in
           join t1 x d (remove_min_binding t2)
 
@@ -379,7 +372,7 @@ module Make(Ord: OrderedType) = struct
     let rec split x = function
         Empty ->
           (Empty, None, Empty)
-      | Node {l; v; d; r} ->
+      | Node {l; v; d; r; _} ->
           let c = Ord.compare x v in
           if c = 0 then (l, Some d, r)
           else if c < 0 then
@@ -390,20 +383,19 @@ module Make(Ord: OrderedType) = struct
     let rec merge f s1 s2 =
       match (s1, s2) with
         (Empty, Empty) -> Empty
-      | (Node {l=l1; v=v1; d=d1; r=r1; h=h1}, _) when h1 >= height s2 ->
+      | (Node {l=l1; v=v1; d=d1; r=r1; h=h1}, (Node _ | Empty)) when h1 >= height s2 ->
           let (l2, d2, r2) = split v1 s2 in
           concat_or_join (merge f l1 l2) v1 (f v1 (Some d1) d2) (merge f r1 r2)
-      | (_, Node {l=l2; v=v2; d=d2; r=r2}) ->
+      | ((Node _ | Empty), Node {l=l2; v=v2; d=d2; r=r2; _}) ->
           let (l1, d1, r1) = split v2 s1 in
           concat_or_join (merge f l1 l2) v2 (f v2 d1 (Some d2)) (merge f r1 r2)
-      | _ ->
+      | (Node _, Empty) ->
           assert false
 
     let rec union f s1 s2 =
       match (s1, s2) with
       | (Empty, s) | (s, Empty) -> s
-      | (Node {l=l1; v=v1; d=d1; r=r1; h=h1},
-         Node {l=l2; v=v2; d=d2; r=r2; h=h2}) ->
+      | (Node {l=l1; v=v1; d=d1; r=r1; h=h1}, Node {l=l2; v=v2; d=d2; r=r2; h=h2}) ->
           if h1 >= h2 then
             let (l2, d2, r2) = split v1 s2 in
             let l = union f l1 l2 and r = union f r1 r2 in
@@ -419,7 +411,7 @@ module Make(Ord: OrderedType) = struct
 
     let rec filter p = function
         Empty -> Empty
-      | Node {l; v; d; r} as m ->
+      | Node {l; v; d; r; _} as m ->
           (* call [p] in the expected left-to-right order *)
           let l' = filter p l in
           let pvd = p v d in
@@ -427,21 +419,9 @@ module Make(Ord: OrderedType) = struct
           if pvd then if l==l' && r==r' then m else join l' v d r'
           else concat l' r'
 
-    let rec filter_map f = function
-        Empty -> Empty
-      | Node {l; v; d; r} ->
-          (* call [f] in the expected left-to-right order *)
-          let l' = filter_map f l in
-          let fvd = f v d in
-          let r' = filter_map f r in
-          begin match fvd with
-            | Some d' -> join l' v d' r'
-            | None -> concat l' r'
-          end
-
     let rec partition p = function
         Empty -> (Empty, Empty)
-      | Node {l; v; d; r} ->
+      | Node {l; v; d; r; _} ->
           (* call [p] in the expected left-to-right order *)
           let (lt, lf) = partition p l in
           let pvd = p v d in
@@ -455,7 +435,7 @@ module Make(Ord: OrderedType) = struct
     let rec cons_enum m e =
       match m with
         Empty -> e
-      | Node {l; v; d; r} -> cons_enum l (More(v, d, r, e))
+      | Node {l; v; d; r; _} -> cons_enum l (More(v, d, r, e))
 
     let compare cmp m1 m2 =
       let rec compare_aux e1 e2 =
@@ -484,11 +464,11 @@ module Make(Ord: OrderedType) = struct
 
     let rec cardinal = function
         Empty -> 0
-      | Node {l; r} -> cardinal l + 1 + cardinal r
+      | Node {l; r; _} -> cardinal l + 1 + cardinal r
 
     let rec bindings_aux accu = function
         Empty -> accu
-      | Node {l; v; d; r} -> bindings_aux ((v, d) :: bindings_aux accu r) l
+      | Node {l; v; d; r; _} -> bindings_aux ((v, d) :: bindings_aux accu r) l
 
     let bindings s =
       bindings_aux [] s
@@ -497,40 +477,4 @@ module Make(Ord: OrderedType) = struct
 
     let choose_opt = min_binding_opt
 
-    let add_seq i m =
-      Seq.fold_left (fun m (k,v) -> add k v m) m i
-
-    let of_seq i = add_seq i empty
-
-    let rec seq_of_enum_ c () = match c with
-      | End -> Seq.Nil
-      | More (k,v,t,rest) -> Seq.Cons ((k,v), seq_of_enum_ (cons_enum t rest))
-
-    let to_seq m =
-      seq_of_enum_ (cons_enum m End)
-
-    let rec snoc_enum s e =
-      match s with
-        Empty -> e
-      | Node{l; v; d; r} -> snoc_enum r (More(v, d, l, e))
-
-    let rec rev_seq_of_enum_ c () = match c with
-      | End -> Seq.Nil
-      | More (k,v,t,rest) ->
-          Seq.Cons ((k,v), rev_seq_of_enum_ (snoc_enum t rest))
-
-    let to_rev_seq c =
-      rev_seq_of_enum_ (snoc_enum c End)
-
-    let to_seq_from low m =
-      let rec aux low m c = match m with
-        | Empty -> c
-        | Node {l; v; d; r; _} ->
-            begin match Ord.compare v low with
-              | 0 -> More (v, d, r, c)
-              | n when n<0 -> aux low r c
-              | _ -> aux low l (More (v, d, r, c))
-            end
-      in
-      seq_of_enum_ (aux low m End)
 end

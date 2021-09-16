@@ -205,7 +205,7 @@ CAMLexport int caml_flush_partial(struct channel *channel)
   return (channel->curr == channel->buff);
 }
 
-/* Flush completely the buffer. */
+// /* Flush completely the buffer. */
 
 CAMLexport void caml_flush(struct channel *channel)
 {

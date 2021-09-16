@@ -13,14 +13,6 @@
 (*                                                                        *)
 (**************************************************************************)
 
-(* NOTE:
-   If this file is bytesLabels.mli, run tools/sync_stdlib_docs after editing it
-   to generate bytes.mli.
-
-   If this file is bytes.mli, do not edit it directly -- edit
-   bytesLabels.mli instead.
- *)
-
 (** Byte sequence operations.
 
    A byte sequence is a mutable data structure that contains a
@@ -47,41 +39,41 @@
 
    Bytes are represented by the OCaml type [char].
 
-   The labeled version of this module can be used as described in the
-   {!StdLabels} module.
-
    @since 4.02.0
-
-   *)
+ *)
 
 external length : bytes -> int = "%bytes_length"
 (** Return the length (number of bytes) of the argument. *)
 
 external get : bytes -> int -> char = "%bytes_safe_get"
 (** [get s n] returns the byte at index [n] in argument [s].
-    @raise Invalid_argument if [n] is not a valid index in [s]. *)
 
+    Raise [Invalid_argument] if [n] is not a valid index in [s]. *)
 
 external set : bytes -> int -> char -> unit = "%bytes_safe_set"
 (** [set s n c] modifies [s] in place, replacing the byte at index [n]
     with [c].
-    @raise Invalid_argument if [n] is not a valid index in [s]. *)
+
+    Raise [Invalid_argument] if [n] is not a valid index in [s]. *)
 
 external create : int -> bytes = "caml_create_bytes"
 (** [create n] returns a new byte sequence of length [n]. The
     sequence is uninitialized and contains arbitrary bytes.
-    @raise Invalid_argument if [n < 0] or [n > ]{!Sys.max_string_length}. *)
+
+    Raise [Invalid_argument] if [n < 0] or [n > ]{!Sys.max_string_length}. *)
 
 val make : int -> char -> bytes
 (** [make n c] returns a new byte sequence of length [n], filled with
     the byte [c].
-    @raise Invalid_argument if [n < 0] or [n > ]{!Sys.max_string_length}. *)
+
+    Raise [Invalid_argument] if [n < 0] or [n > ]{!Sys.max_string_length}. *)
 
 val init : int -> (int -> char) -> bytes
-(** [init n f] returns a fresh byte sequence of length [n],
-    with character [i] initialized to the result of [f i] (in increasing
+(** [Bytes.init n f] returns a fresh byte sequence of length [n], with
+    character [i] initialized to the result of [f i] (in increasing
     index order).
-    @raise Invalid_argument if [n < 0] or [n > ]{!Sys.max_string_length}. *)
+
+    Raise [Invalid_argument] if [n < 0] or [n > ]{!Sys.max_string_length}. *)
 
 val empty : bytes
 (** A byte sequence of size 0. *)
@@ -99,14 +91,15 @@ val to_string : bytes -> string
     sequence. *)
 
 val sub : bytes -> int -> int -> bytes
-(** [sub s pos len] returns a new byte sequence of length [len],
-    containing the subsequence of [s] that starts at position [pos]
+(** [sub s start len] returns a new byte sequence of length [len],
+    containing the subsequence of [s] that starts at position [start]
     and has length [len].
-    @raise Invalid_argument if [pos] and [len] do not designate a
+
+    Raise [Invalid_argument] if [start] and [len] do not designate a
     valid range of [s]. *)
 
 val sub_string : bytes -> int -> int -> string
-(** Same as {!sub} but return a string instead of a byte sequence. *)
+(** Same as [sub] but return a string instead of a byte sequence. *)
 
 val extend : bytes -> int -> int -> bytes
 (** [extend s left right] returns a new byte sequence that contains
@@ -114,53 +107,51 @@ val extend : bytes -> int -> int -> bytes
     [right] uninitialized bytes appended to it. If [left] or [right]
     is negative, then bytes are removed (instead of appended) from
     the corresponding side of [s].
-    @raise Invalid_argument if the result length is negative or
-    longer than {!Sys.max_string_length} bytes.
-    @since 4.05.0 in BytesLabels *)
+
+    Raise [Invalid_argument] if the result length is negative or
+    longer than {!Sys.max_string_length} bytes. *)
 
 val fill : bytes -> int -> int -> char -> unit
-(** [fill s pos len c] modifies [s] in place, replacing [len]
-    characters with [c], starting at [pos].
-    @raise Invalid_argument if [pos] and [len] do not designate a
+(** [fill s start len c] modifies [s] in place, replacing [len]
+    characters with [c], starting at [start].
+
+    Raise [Invalid_argument] if [start] and [len] do not designate a
     valid range of [s]. *)
 
-val blit :
-  bytes -> int -> bytes -> int -> int
-  -> unit
-(** [blit src src_pos dst dst_pos len] copies [len] bytes from sequence
-    [src], starting at index [src_pos], to sequence [dst], starting at
-    index [dst_pos]. It works correctly even if [src] and [dst] are the
+val blit : bytes -> int -> bytes -> int -> int -> unit
+(** [blit src srcoff dst dstoff len] copies [len] bytes from sequence
+    [src], starting at index [srcoff], to sequence [dst], starting at
+    index [dstoff]. It works correctly even if [src] and [dst] are the
     same byte sequence, and the source and destination intervals
     overlap.
-    @raise Invalid_argument if [src_pos] and [len] do not
-    designate a valid range of [src], or if [dst_pos] and [len]
+
+    Raise [Invalid_argument] if [srcoff] and [len] do not
+    designate a valid range of [src], or if [dstoff] and [len]
     do not designate a valid range of [dst]. *)
 
-val blit_string :
-  string -> int -> bytes -> int -> int
-  -> unit
-(** [blit src src_pos dst dst_pos len] copies [len] bytes from string
-    [src], starting at index [src_pos], to byte sequence [dst],
-    starting at index [dst_pos].
-    @raise Invalid_argument if [src_pos] and [len] do not
-    designate a valid range of [src], or if [dst_pos] and [len]
-    do not designate a valid range of [dst].
-    @since 4.05.0 in BytesLabels *)
+val blit_string : string -> int -> bytes -> int -> int -> unit
+(** [blit src srcoff dst dstoff len] copies [len] bytes from string
+    [src], starting at index [srcoff], to byte sequence [dst],
+    starting at index [dstoff].
+
+    Raise [Invalid_argument] if [srcoff] and [len] do not
+    designate a valid range of [src], or if [dstoff] and [len]
+    do not designate a valid range of [dst]. *)
 
 val concat : bytes -> bytes list -> bytes
 (** [concat sep sl] concatenates the list of byte sequences [sl],
     inserting the separator byte sequence [sep] between each, and
     returns the result as a new byte sequence.
-    @raise Invalid_argument if the result is longer than
-    {!Sys.max_string_length} bytes.
-    *)
+
+    Raise [Invalid_argument] if the result is longer than
+    {!Sys.max_string_length} bytes. *)
 
 val cat : bytes -> bytes -> bytes
 (** [cat s1 s2] concatenates [s1] and [s2] and returns the result
-    as a new byte sequence.
-    @raise Invalid_argument if the result is longer than
-    {!Sys.max_string_length} bytes.
-    @since 4.05.0 in BytesLabels *)
+     as new byte sequence.
+
+    Raise [Invalid_argument] if the result is longer than
+    {!Sys.max_string_length} bytes. *)
 
 val iter : (char -> unit) -> bytes -> unit
 (** [iter f s] applies function [f] in turn to all the bytes of [s].
@@ -168,14 +159,14 @@ val iter : (char -> unit) -> bytes -> unit
     (length s - 1)); ()]. *)
 
 val iteri : (int -> char -> unit) -> bytes -> unit
-(** Same as {!iter}, but the function is applied to the index of
+(** Same as {!Bytes.iter}, but the function is applied to the index of
     the byte as first argument and the byte itself as second
     argument. *)
 
 val map : (char -> char) -> bytes -> bytes
-(** [map f s] applies function [f] in turn to all the bytes of [s] (in
-    increasing index order) and stores the resulting bytes in a new sequence
-    that is returned as the result. *)
+(** [map f s] applies function [f] in turn to all the bytes of [s]
+    (in increasing index order) and stores the resulting bytes in
+    a new sequence that is returned as the result. *)
 
 val mapi : (int -> char -> char) -> bytes -> bytes
 (** [mapi f s] calls [f] with each character of [s] and its
@@ -192,13 +183,15 @@ val escaped : bytes -> bytes
     by escape sequences, following the lexical conventions of OCaml.
     All characters outside the ASCII printable range (32..126) are
     escaped, as well as backslash and double-quote.
-    @raise Invalid_argument if the result is longer than
+
+    Raise [Invalid_argument] if the result is longer than
     {!Sys.max_string_length} bytes. *)
 
 val index : bytes -> char -> int
 (** [index s c] returns the index of the first occurrence of byte [c]
     in [s].
-    @raise Not_found if [c] does not occur in [s]. *)
+
+    Raise [Not_found] if [c] does not occur in [s]. *)
 
 val index_opt: bytes -> char -> int option
 (** [index_opt s c] returns the index of the first occurrence of byte [c]
@@ -208,7 +201,8 @@ val index_opt: bytes -> char -> int option
 val rindex : bytes -> char -> int
 (** [rindex s c] returns the index of the last occurrence of byte [c]
     in [s].
-    @raise Not_found if [c] does not occur in [s]. *)
+
+    Raise [Not_found] if [c] does not occur in [s]. *)
 
 val rindex_opt: bytes -> char -> int option
 (** [rindex_opt s c] returns the index of the last occurrence of byte [c]
@@ -217,32 +211,35 @@ val rindex_opt: bytes -> char -> int option
 
 val index_from : bytes -> int -> char -> int
 (** [index_from s i c] returns the index of the first occurrence of
-    byte [c] in [s] after position [i].  [index s c] is
-    equivalent to [index_from s 0 c].
-    @raise Invalid_argument if [i] is not a valid position in [s].
-    @raise Not_found if [c] does not occur in [s] after position [i]. *)
+    byte [c] in [s] after position [i].  [Bytes.index s c] is
+    equivalent to [Bytes.index_from s 0 c].
+
+    Raise [Invalid_argument] if [i] is not a valid position in [s].
+    Raise [Not_found] if [c] does not occur in [s] after position [i]. *)
 
 val index_from_opt: bytes -> int -> char -> int option
-(** [index_from_opt s i c] returns the index of the first occurrence of
-    byte [c] in [s] after position [i] or [None] if [c] does not occur in [s]
-    after position [i].
-    [index_opt s c] is equivalent to [index_from_opt s 0 c].
-    @raise Invalid_argument if [i] is not a valid position in [s].
+(** [index_from _opts i c] returns the index of the first occurrence of
+    byte [c] in [s] after position [i] or [None] if [c] does not occur in [s] after position [i].
+    [Bytes.index_opt s c] is equivalent to [Bytes.index_from_opt s 0 c].
+
+    Raise [Invalid_argument] if [i] is not a valid position in [s].
     @since 4.05 *)
 
 val rindex_from : bytes -> int -> char -> int
 (** [rindex_from s i c] returns the index of the last occurrence of
     byte [c] in [s] before position [i+1].  [rindex s c] is equivalent
-    to [rindex_from s (length s - 1) c].
-    @raise Invalid_argument if [i+1] is not a valid position in [s].
-    @raise Not_found if [c] does not occur in [s] before position [i+1]. *)
+    to [rindex_from s (Bytes.length s - 1) c].
+
+    Raise [Invalid_argument] if [i+1] is not a valid position in [s].
+    Raise [Not_found] if [c] does not occur in [s] before position [i+1]. *)
 
 val rindex_from_opt: bytes -> int -> char -> int option
 (** [rindex_from_opt s i c] returns the index of the last occurrence
     of byte [c] in [s] before position [i+1] or [None] if [c] does not
     occur in [s] before position [i+1].  [rindex_opt s c] is equivalent to
-    [rindex_from s (length s - 1) c].
-    @raise Invalid_argument if [i+1] is not a valid position in [s].
+    [rindex_from s (Bytes.length s - 1) c].
+
+    Raise [Invalid_argument] if [i+1] is not a valid position in [s].
     @since 4.05 *)
 
 val contains : bytes -> char -> bool
@@ -252,63 +249,61 @@ val contains_from : bytes -> int -> char -> bool
 (** [contains_from s start c] tests if byte [c] appears in [s] after
     position [start].  [contains s c] is equivalent to [contains_from
     s 0 c].
-    @raise Invalid_argument if [start] is not a valid position in [s]. *)
+
+    Raise [Invalid_argument] if [start] is not a valid position in [s]. *)
 
 val rcontains_from : bytes -> int -> char -> bool
 (** [rcontains_from s stop c] tests if byte [c] appears in [s] before
     position [stop+1].
-    @raise Invalid_argument if [stop < 0] or [stop+1] is not a valid
+
+    Raise [Invalid_argument] if [stop < 0] or [stop+1] is not a valid
     position in [s]. *)
 
 val uppercase : bytes -> bytes
-  [@@ocaml.deprecated
-    "Use Bytes.uppercase_ascii/BytesLabels.uppercase_ascii instead."]
+  [@@ocaml.deprecated "Use Bytes.uppercase_ascii instead."]
 (** Return a copy of the argument, with all lowercase letters
    translated to uppercase, including accented letters of the ISO
    Latin-1 (8859-1) character set.
    @deprecated Functions operating on Latin-1 character set are deprecated. *)
 
 val lowercase : bytes -> bytes
-  [@@ocaml.deprecated
-    "Use Bytes.lowercase_ascii/BytesLabels.lowercase_ascii instead."]
+  [@@ocaml.deprecated "Use Bytes.lowercase_ascii instead."]
 (** Return a copy of the argument, with all uppercase letters
    translated to lowercase, including accented letters of the ISO
    Latin-1 (8859-1) character set.
    @deprecated Functions operating on Latin-1 character set are deprecated. *)
 
 val capitalize : bytes -> bytes
-  [@@ocaml.deprecated
-    "Use Bytes.capitalize_ascii/BytesLabels.capitalize_ascii instead."]
+  [@@ocaml.deprecated "Use Bytes.capitalize_ascii instead."]
 (** Return a copy of the argument, with the first character set to uppercase,
-   using the ISO Latin-1 (8859-1) character set.
+   using the ISO Latin-1 (8859-1) character set..
    @deprecated Functions operating on Latin-1 character set are deprecated. *)
 
 val uncapitalize : bytes -> bytes
-  [@@ocaml.deprecated
-    "Use Bytes.uncapitalize_ascii/BytesLabels.uncapitalize_ascii instead."]
+  [@@ocaml.deprecated "Use Bytes.uncapitalize_ascii instead."]
 (** Return a copy of the argument, with the first character set to lowercase,
-   using the ISO Latin-1 (8859-1) character set.
+   using the ISO Latin-1 (8859-1) character set..
    @deprecated Functions operating on Latin-1 character set are deprecated. *)
 
 val uppercase_ascii : bytes -> bytes
 (** Return a copy of the argument, with all lowercase letters
    translated to uppercase, using the US-ASCII character set.
-   @since 4.03.0 (4.05.0 in BytesLabels) *)
+   @since 4.03.0 *)
 
 val lowercase_ascii : bytes -> bytes
 (** Return a copy of the argument, with all uppercase letters
    translated to lowercase, using the US-ASCII character set.
-   @since 4.03.0 (4.05.0 in BytesLabels) *)
+   @since 4.03.0 *)
 
 val capitalize_ascii : bytes -> bytes
 (** Return a copy of the argument, with the first character set to uppercase,
    using the US-ASCII character set.
-   @since 4.03.0 (4.05.0 in BytesLabels) *)
+   @since 4.03.0 *)
 
 val uncapitalize_ascii : bytes -> bytes
 (** Return a copy of the argument, with the first character set to lowercase,
    using the US-ASCII character set.
-   @since 4.03.0 (4.05.0 in BytesLabels) *)
+   @since 4.03.0 *)
 
 type t = bytes
 (** An alias for the type of byte sequences. *)
@@ -321,16 +316,16 @@ val compare: t -> t -> int
 
 val equal: t -> t -> bool
 (** The equality function for byte sequences.
-    @since 4.03.0 (4.05.0 in BytesLabels) *)
+    @since 4.03.0 *)
 
-(** {1:unsafe Unsafe conversions (for advanced users)}
+(** {3 Unsafe conversions (for advanced users)}
 
     This section describes unsafe, low-level conversion functions
     between [bytes] and [string]. They do not copy the internal data;
     used improperly, they can break the immutability invariant on
     strings provided by the [-safe-string] option. They are available for
     expert library authors, but for most purposes you should use the
-    always-correct {!to_string} and {!of_string} instead.
+    always-correct {!Bytes.to_string} and {!Bytes.of_string} instead.
 *)
 
 val unsafe_to_string : bytes -> string
@@ -452,218 +447,6 @@ let s = Bytes.of_string "hello"
     [string] type for this purpose.
 *)
 
-
-(** {1 Iterators} *)
-
-val to_seq : t -> char Seq.t
-(** Iterate on the string, in increasing index order. Modifications of the
-    string during iteration will be reflected in the iterator.
-    @since 4.07 *)
-
-val to_seqi : t -> (int * char) Seq.t
-(** Iterate on the string, in increasing order, yielding indices along chars
-    @since 4.07 *)
-
-val of_seq : char Seq.t -> t
-(** Create a string from the generator
-    @since 4.07 *)
-
-(** {1 Binary encoding/decoding of integers} *)
-
-(** The functions in this section binary encode and decode integers to
-    and from byte sequences.
-
-    All following functions raise [Invalid_argument] if the space
-    needed at index [i] to decode or encode the integer is not
-    available.
-
-    Little-endian (resp. big-endian) encoding means that least
-    (resp. most) significant bytes are stored first.  Big-endian is
-    also known as network byte order.  Native-endian encoding is
-    either little-endian or big-endian depending on {!Sys.big_endian}.
-
-    32-bit and 64-bit integers are represented by the [int32] and
-    [int64] types, which can be interpreted either as signed or
-    unsigned numbers.
-
-    8-bit and 16-bit integers are represented by the [int] type,
-    which has more bits than the binary encoding.  These extra bits
-    are handled as follows: {ul
-    {- Functions that decode signed (resp. unsigned) 8-bit or 16-bit
-    integers represented by [int] values sign-extend
-    (resp. zero-extend) their result.}
-    {- Functions that encode 8-bit or 16-bit integers represented by
-    [int] values truncate their input to their least significant
-    bytes.}}
-*)
-
-val get_uint8 : bytes -> int -> int
-(** [get_uint8 b i] is [b]'s unsigned 8-bit integer starting at byte index [i].
-    @since 4.08
-*)
-
-val get_int8 : bytes -> int -> int
-(** [get_int8 b i] is [b]'s signed 8-bit integer starting at byte index [i].
-    @since 4.08
-*)
-
-val get_uint16_ne : bytes -> int -> int
-(** [get_uint16_ne b i] is [b]'s native-endian unsigned 16-bit integer
-    starting at byte index [i].
-    @since 4.08
-*)
-
-val get_uint16_be : bytes -> int -> int
-(** [get_uint16_be b i] is [b]'s big-endian unsigned 16-bit integer
-    starting at byte index [i].
-    @since 4.08
-*)
-
-val get_uint16_le : bytes -> int -> int
-(** [get_uint16_le b i] is [b]'s little-endian unsigned 16-bit integer
-    starting at byte index [i].
-    @since 4.08
-*)
-
-val get_int16_ne : bytes -> int -> int
-(** [get_int16_ne b i] is [b]'s native-endian signed 16-bit integer
-    starting at byte index [i].
-    @since 4.08
-*)
-
-val get_int16_be : bytes -> int -> int
-(** [get_int16_be b i] is [b]'s big-endian signed 16-bit integer
-    starting at byte index [i].
-    @since 4.08
-*)
-
-val get_int16_le : bytes -> int -> int
-(** [get_int16_le b i] is [b]'s little-endian signed 16-bit integer
-    starting at byte index [i].
-    @since 4.08
-*)
-
-val get_int32_ne : bytes -> int -> int32
-(** [get_int32_ne b i] is [b]'s native-endian 32-bit integer
-    starting at byte index [i].
-    @since 4.08
-*)
-
-val get_int32_be : bytes -> int -> int32
-(** [get_int32_be b i] is [b]'s big-endian 32-bit integer
-    starting at byte index [i].
-    @since 4.08
-*)
-
-val get_int32_le : bytes -> int -> int32
-(** [get_int32_le b i] is [b]'s little-endian 32-bit integer
-    starting at byte index [i].
-    @since 4.08
-*)
-
-val get_int64_ne : bytes -> int -> int64
-(** [get_int64_ne b i] is [b]'s native-endian 64-bit integer
-    starting at byte index [i].
-    @since 4.08
-*)
-
-val get_int64_be : bytes -> int -> int64
-(** [get_int64_be b i] is [b]'s big-endian 64-bit integer
-    starting at byte index [i].
-    @since 4.08
-*)
-
-val get_int64_le : bytes -> int -> int64
-(** [get_int64_le b i] is [b]'s little-endian 64-bit integer
-    starting at byte index [i].
-    @since 4.08
-*)
-
-val set_uint8 : bytes -> int -> int -> unit
-(** [set_uint8 b i v] sets [b]'s unsigned 8-bit integer starting at byte index
-    [i] to [v].
-    @since 4.08
-*)
-
-val set_int8 : bytes -> int -> int -> unit
-(** [set_int8 b i v] sets [b]'s signed 8-bit integer starting at byte index
-    [i] to [v].
-    @since 4.08
-*)
-
-val set_uint16_ne : bytes -> int -> int -> unit
-(** [set_uint16_ne b i v] sets [b]'s native-endian unsigned 16-bit integer
-    starting at byte index [i] to [v].
-    @since 4.08
-*)
-
-val set_uint16_be : bytes -> int -> int -> unit
-(** [set_uint16_be b i v] sets [b]'s big-endian unsigned 16-bit integer
-    starting at byte index [i] to [v].
-    @since 4.08
-*)
-
-val set_uint16_le : bytes -> int -> int -> unit
-(** [set_uint16_le b i v] sets [b]'s little-endian unsigned 16-bit integer
-    starting at byte index [i] to [v].
-    @since 4.08
-*)
-
-val set_int16_ne : bytes -> int -> int -> unit
-(** [set_int16_ne b i v] sets [b]'s native-endian signed 16-bit integer
-    starting at byte index [i] to [v].
-    @since 4.08
-*)
-
-val set_int16_be : bytes -> int -> int -> unit
-(** [set_int16_be b i v] sets [b]'s big-endian signed 16-bit integer
-    starting at byte index [i] to [v].
-    @since 4.08
-*)
-
-val set_int16_le : bytes -> int -> int -> unit
-(** [set_int16_le b i v] sets [b]'s little-endian signed 16-bit integer
-    starting at byte index [i] to [v].
-    @since 4.08
-*)
-
-val set_int32_ne : bytes -> int -> int32 -> unit
-(** [set_int32_ne b i v] sets [b]'s native-endian 32-bit integer
-    starting at byte index [i] to [v].
-    @since 4.08
-*)
-
-val set_int32_be : bytes -> int -> int32 -> unit
-(** [set_int32_be b i v] sets [b]'s big-endian 32-bit integer
-    starting at byte index [i] to [v].
-    @since 4.08
-*)
-
-val set_int32_le : bytes -> int -> int32 -> unit
-(** [set_int32_le b i v] sets [b]'s little-endian 32-bit integer
-    starting at byte index [i] to [v].
-    @since 4.08
-*)
-
-val set_int64_ne : bytes -> int -> int64 -> unit
-(** [set_int64_ne b i v] sets [b]'s native-endian 64-bit integer
-    starting at byte index [i] to [v].
-    @since 4.08
-*)
-
-val set_int64_be : bytes -> int -> int64 -> unit
-(** [set_int64_be b i v] sets [b]'s big-endian 64-bit integer
-    starting at byte index [i] to [v].
-    @since 4.08
-*)
-
-val set_int64_le : bytes -> int -> int64 -> unit
-(** [set_int64_le b i v] sets [b]'s little-endian 64-bit integer
-    starting at byte index [i] to [v].
-    @since 4.08
-*)
-
-
 (**/**)
 
 (* The following is for system use only. Do not call directly. *)
@@ -671,10 +454,7 @@ val set_int64_le : bytes -> int -> int64 -> unit
 external unsafe_get : bytes -> int -> char = "%bytes_unsafe_get"
 external unsafe_set : bytes -> int -> char -> unit = "%bytes_unsafe_set"
 external unsafe_blit :
-  bytes -> int -> bytes -> int -> int ->
-    unit = "caml_blit_bytes" [@@noalloc]
-external unsafe_blit_string :
-  string -> int -> bytes -> int -> int -> unit
-  = "caml_blit_string" [@@noalloc]
+  bytes -> int -> bytes -> int -> int -> unit
+  = "caml_blit_bytes" [@@noalloc]
 external unsafe_fill :
   bytes -> int -> int -> char -> unit = "caml_fill_bytes" [@@noalloc]

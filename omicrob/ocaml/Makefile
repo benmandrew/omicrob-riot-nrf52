@@ -104,7 +104,7 @@ endif
 expunge := expunge$(EXE)
 
 # targets for the compilerlibs/*.{cma,cmxa} archives
-include compilerlibs/Makefile.compilerlibs
+# include compilerlibs/Makefile.compilerlibs
 
 # The configuration file
 
@@ -571,8 +571,8 @@ tests:
 # Make clean in the test suite
 
 .PHONY: clean
-clean::
-	$(MAKE) -C testsuite clean
+# clean::
+# 	$(MAKE) -C testsuite clean
 
 # Build the manual latex files from the etex source files
 # (see manual/README.md)
@@ -797,15 +797,15 @@ ocamllex: ocamlyacc
 ocamllex.opt: ocamlopt
 	$(MAKE) -C lex allopt
 
-partialclean::
-	$(MAKE) -C lex clean
+# partialclean::
+# 	$(MAKE) -C lex clean
 
 .PHONY: ocamlyacc
 ocamlyacc:
 	$(MAKE) -C yacc $(BOOT_FLEXLINK_CMD) all
 
-clean::
-	$(MAKE) -C yacc clean
+# clean::
+# 	$(MAKE) -C yacc clean
 
 # The Menhir-generated parser
 
@@ -868,8 +868,8 @@ ocamltest: ocamlc ocamlyacc ocamllex otherlibraries
 ocamltest.opt: ocamlc.opt ocamlyacc ocamllex
 	$(MAKE) -C ocamltest allopt
 
-partialclean::
-	$(MAKE) -C ocamltest clean
+# partialclean::
+# 	$(MAKE) -C ocamltest clean
 
 # Documentation
 
@@ -882,8 +882,8 @@ html_doc: ocamldoc
 manpages:
 	$(MAKE) -C ocamldoc $@
 
-partialclean::
-	$(MAKE) -C ocamldoc clean
+# partialclean::
+# 	$(MAKE) -C ocamldoc clean
 
 # The extra libraries
 
@@ -895,11 +895,11 @@ otherlibraries: ocamltools
 otherlibrariesopt:
 	$(MAKE) -C otherlibs allopt
 
-partialclean::
-	$(MAKE) -C otherlibs partialclean
+# partialclean::
+# 	$(MAKE) -C otherlibs partialclean
 
-clean::
-	$(MAKE) -C otherlibs clean
+# clean::
+# 	$(MAKE) -C otherlibs clean
 
 # The replay debugger
 
@@ -907,8 +907,8 @@ clean::
 ocamldebugger: ocamlc ocamlyacc ocamllex otherlibraries
 	$(MAKE) -C debugger all
 
-partialclean::
-	$(MAKE) -C debugger clean
+# partialclean::
+# 	$(MAKE) -C debugger clean
 
 # Check that the native-code compiler is supported
 .PHONY: checknative
@@ -1008,8 +1008,8 @@ ocamlnat$(EXE): compilerlibs/ocamlcommon.cmxa compilerlibs/ocamloptcomp.cmxa \
     $(OPTTOPLEVELSTART:.cmo=.cmx)
 	$(CAMLOPT_CMD) $(LINKFLAGS) -linkall -o $@ $^
 
-partialclean::
-	rm -f ocamlnat ocamlnat.exe
+# partialclean::
+# 	rm -f ocamlnat ocamlnat.exe
 
 toplevel/opttoploop.cmx: otherlibs/dynlink/dynlink.cmxa
 
