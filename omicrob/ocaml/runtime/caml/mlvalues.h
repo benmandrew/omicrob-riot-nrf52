@@ -58,17 +58,17 @@ extern "C" {
 */
 
 typedef intnat value;
-typedef uintnat header_t;
+// typedef uintnat header_t;
 typedef uintnat mlsize_t;
-typedef unsigned int tag_t;             /* Actually, an unsigned char */
-typedef uintnat color_t;
+// typedef unsigned int tag_t;             /* Actually, an unsigned char */
+// typedef uintnat color_t;
 typedef uintnat mark_t;
 
 #include "domain_state.h"
 
 /* Longs vs blocks. */
 #define Is_long(x)   (((x) & 1) != 0)
-#define Is_block(x)  (((x) & 1) == 0)
+// #define Is_block(x)  (((x) & 1) == 0)
 
 /* Conversion macro names are always of the form  "to_from". */
 /* Example: Val_long as in "Val from long" or "Val of long". */
@@ -76,8 +76,8 @@ typedef uintnat mark_t;
 #define Long_val(x)     ((x) >> 1)
 #define Max_long (((intnat)1 << (8 * sizeof(value) - 2)) - 1)
 #define Min_long (-((intnat)1 << (8 * sizeof(value) - 2)))
-#define Val_int(x) Val_long(x)
-#define Int_val(x) ((int) Long_val(x))
+// #define Val_int(x) Val_long(x)
+// #define Int_val(x) ((int) Long_val(x))
 #define Unsigned_long_val(x) ((uintnat)(x) >> 1)
 #define Unsigned_int_val(x)  ((int) Unsigned_long_val(x))
 
@@ -113,7 +113,7 @@ bits  63        (64-P) (63-P)        10 9     8 7   0
 
 */
 
-#define Tag_hd(hd) ((tag_t) ((hd) & 0xFF))
+// #define Tag_hd(hd) ((tag_t) ((hd) & 0xFF))
 
 #define Gen_profinfo_shift(width) (64 - (width))
 #define Gen_profinfo_mask(width) ((1ull << (width)) - 1ull)
@@ -128,10 +128,10 @@ bits  63        (64-P) (63-P)        10 9     8 7   0
 #define Wosize_hd(hd) ((mlsize_t) ((Hd_no_profinfo(hd)) >> 10))
 #define Profinfo_hd(hd) (Gen_profinfo_hd(PROFINFO_WIDTH, hd))
 #else
-#define Wosize_hd(hd) ((mlsize_t) ((hd) >> 10))
+// #define Wosize_hd(hd) ((mlsize_t) ((hd) >> 10))
 #endif /* WITH_PROFINFO */
 
-#define Hd_val(val) (((header_t *) (val)) [-1])        /* Also an l-value. */
+// #define Hd_val(val) (((header_t *) (val)) [-1])        /* Also an l-value. */
 #define Hd_op(op) (Hd_val (op))                        /* Also an l-value. */
 #define Hd_bp(bp) (Hd_val (bp))                        /* Also an l-value. */
 #define Hd_hp(hp) (* ((header_t *) (hp)))              /* Also an l-value. */
@@ -150,21 +150,21 @@ bits  63        (64-P) (63-P)        10 9     8 7   0
 #define Max_wosize ((1 << 22) - 1)
 #endif /* ARCH_SIXTYFOUR */
 
-#define Wosize_val(val) (Wosize_hd (Hd_val (val)))
+// #define Wosize_val(val) (Wosize_hd (Hd_val (val)))
 #define Wosize_op(op) (Wosize_val (op))
 #define Wosize_bp(bp) (Wosize_val (bp))
 #define Wosize_hp(hp) (Wosize_hd (Hd_hp (hp)))
 #define Whsize_wosize(sz) ((sz) + 1)
 #define Wosize_whsize(sz) ((sz) - 1)
 #define Wosize_bhsize(sz) ((sz) / sizeof (value) - 1)
-#define Bsize_wsize(sz) ((sz) * sizeof (value))
-#define Wsize_bsize(sz) ((sz) / sizeof (value))
+// #define Bsize_wsize(sz) ((sz) * sizeof (value))
+// #define Wsize_bsize(sz) ((sz) / sizeof (value))
 #define Bhsize_wosize(sz) (Bsize_wsize (Whsize_wosize (sz)))
 #define Bhsize_bosize(sz) ((sz) + sizeof (header_t))
-#define Bosize_val(val) (Bsize_wsize (Wosize_val (val)))
+// #define Bosize_val(val) (Bsize_wsize (Wosize_val (val)))
 #define Bosize_op(op) (Bosize_val (Val_op (op)))
 #define Bosize_bp(bp) (Bosize_val (Val_bp (bp)))
-#define Bosize_hd(hd) (Bsize_wsize (Wosize_hd (hd)))
+// #define Bosize_hd(hd) (Bsize_wsize (Wosize_hd (hd)))
 #define Whsize_hp(hp) (Whsize_wosize (Wosize_hp (hp)))
 #define Whsize_val(val) (Whsize_hp (Hp_val (val)))
 #define Whsize_bp(bp) (Whsize_val (Val_bp (bp)))
@@ -180,7 +180,7 @@ bits  63        (64-P) (63-P)        10 9     8 7   0
 #define Tag_hp(hp) (((unsigned char *) (hp)) [sizeof(value)-1])
                                                  /* Also an l-value. */
 #else
-#define Tag_val(val) (((unsigned char *) (val)) [-sizeof(value)])
+// #define Tag_val(val) (((unsigned char *) (val)) [-sizeof(value)])
                                                  /* Also an l-value. */
 #define Tag_hp(hp) (((unsigned char *) (hp)) [0])
                                                  /* Also an l-value. */
@@ -195,10 +195,10 @@ bits  63        (64-P) (63-P)        10 9     8 7   0
 /* Pointer to the first field. */
 #define Op_val(x) ((value *) (x))
 /* Fields are numbered from 0. */
-#define Field(x, i) (((value *)(x)) [i])           /* Also an l-value. */
+// #define Field(x, i) (((value *)(x)) [i])           /* Also an l-value. */
 
-typedef int32_t opcode_t;
-typedef opcode_t * code_t;
+// typedef int32_t opcode_t;
+// typedef opcode_t * code_t;
 
 /* NOTE: [Forward_tag] and [Infix_tag] must be just under
    [No_scan_tag], with [Infix_tag] the lower one.
@@ -218,13 +218,13 @@ typedef opcode_t * code_t;
    with tag Closure_tag (see compact.c). */
 
 #define Infix_tag 249
-#define Infix_offset_hd(hd) (Bosize_hd(hd))
+// #define Infix_offset_hd(hd) (Bosize_hd(hd))
 #define Infix_offset_val(v) Infix_offset_hd(Hd_val(v))
 
 /* Another special case: objects */
 #define Object_tag 248
-#define Class_val(val) Field((val), 0)
-#define Oid_val(val) Long_val(Field((val), 1))
+// #define Class_val(val) Field((val), 0)
+// #define Oid_val(val) Long_val(Field((val), 1))
 CAMLextern value caml_get_public_method (value obj, value tag);
 /* Called as:
    caml_callback(caml_get_public_method(obj, caml_hash_variant(name)), obj) */
@@ -366,7 +366,7 @@ struct custom_operations;       /* defined in [custom.h] */
 #define Int64_val(v) (*((int64_t *) Data_custom_val(v)))
 #else
 CAMLextern int64_t caml_Int64_val(value v);
-#define Int64_val(v) caml_Int64_val(v)
+// #define Int64_val(v) caml_Int64_val(v)
 #endif
 
 /* 3- Atoms are 0-tuples.  They are statically allocated once and for all. */
@@ -376,15 +376,15 @@ CAMLextern header_t *caml_atom_table;
 
 /* Booleans are integers 0 or 1 */
 
-#define Val_bool(x) Val_int((x) != 0)
-#define Bool_val(x) Int_val(x)
-#define Val_false Val_int(0)
-#define Val_true Val_int(1)
+// #define Val_bool(x) Val_int((x) != 0)
+// #define Bool_val(x) Int_val(x)
+// #define Val_false Val_int(0)
+// #define Val_true Val_int(1)
 #define Val_not(x) (Val_false + Val_true - (x))
 
 /* The unit value is 0 (tagged) */
 
-#define Val_unit Val_int(0)
+// #define Val_unit Val_int(0)
 
 /* List constructors */
 #define Val_emptylist Val_int(0)

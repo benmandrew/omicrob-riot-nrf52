@@ -98,7 +98,7 @@ CAMLexport value caml_alloc_string (mlsize_t len)
 CAMLexport value caml_alloc_initialized_string (mlsize_t len, const char *p)
 {
   value result = caml_alloc_string (len);
-  memcpy((char *)String_val(result), p, len);
+  memcpy((char *)Ram_string_val(result), p, len);
   return result;
 }
 

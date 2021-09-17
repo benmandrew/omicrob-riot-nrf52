@@ -68,13 +68,20 @@ internals: config
 #	$(call compile, src/stdlib)
 	mkdir -p bin/nrf52840-mdk/riotbuild
 	cp stubs/riotbuild.h bin/nrf52840-mdk/riotbuild/riotbuild.h
-	$(MAKE) ocaml
 	$(MAKE) example
+	$(MAKE) ocaml
 	$(MAKE) riot
 
 riot:
 	$(MAKE) -C $(RIOTBASE) -f Makefile.include link CFLAGS='$(CFLAGS)'
 
+example:
+	./bin/omicrob -v -c example/test.ml
+	./bin/omicrob -v example/test.cmo -o example/test.byte
+	./bin/omicrob -v example/test.byte -o example/test.c
+	python3 example/extern.py
+	rm example/test.c
+	cp src/byterun/simul/arch-specific.c example/arch-specific.c
 
 ## ------------------------------------------------------------------------------
 
@@ -245,15 +252,6 @@ clean:
 	$(call clean, targets/pic32)
 	$(MAKE) exampleclean
 	$(MAKE) -C ocaml clean
-
-example:
-	./bin/omicrob -v -c example/test.ml
-	./bin/omicrob -v example/test.cmo -o example/test.byte
-	./bin/omicrob -v example/test.byte -o example/test.c
-	python3 example/extern.py
-	rm example/test.c
-	cp src/byterun/simul/arch-specific.c example/arch-specific.c
-#	./bin/omicrob -v example/test.c -o example/test.elf
 
 exampleclean:
 	rm -f example/test.byte example/test.cmo example/test.cmi \

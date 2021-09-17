@@ -203,7 +203,7 @@ static unsigned int hash_value_name(char const *name)
 CAMLprim value caml_register_named_value(value vname, value val)
 {
   struct named_value * nv;
-  const char * name = String_val(vname);
+  const char * name = Ram_string_val(vname);
   size_t namelen = strlen(name);
   unsigned int h = hash_value_name(name);
 

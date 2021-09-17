@@ -172,7 +172,7 @@ static struct ev_info *process_debug_events(code_t code_start,
       ev_start = Field(Field(ev, EV_LOC), LOC_START);
 
       {
-        const char *fname = String_val(Field(ev_start, POS_FNAME));
+        const char *fname = Ram_string_val(Field(ev_start, POS_FNAME));
         events[j].ev_filename = caml_stat_strdup_noexc(fname);
         if(events[j].ev_filename == NULL)
           caml_fatal_error ("caml_add_debug_info: out of memory");
@@ -180,7 +180,7 @@ static struct ev_info *process_debug_events(code_t code_start,
 
       if (Is_block(Field(ev, EV_DEFNAME)) &&
           Tag_val(Field(ev, EV_DEFNAME)) == String_tag) {
-        const char *dname = String_val(Field(ev, EV_DEFNAME));
+        const char *dname = Ram_string_val(Field(ev, EV_DEFNAME));
         events[j].ev_defname = caml_stat_strdup_noexc(dname);
         if (events[j].ev_defname == NULL)
           caml_fatal_error ("caml_add_debug_info: out of memory");
