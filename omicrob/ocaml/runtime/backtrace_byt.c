@@ -398,7 +398,7 @@ static void read_main_debug_info(struct debug_info *di)
       /* Relocate events in event list */
       for (l = evl; l != Val_int(0); l = Field(l, 1)) {
         value ev = Field(l, 0);
-        Field(ev, EV_POS) = Val_long(Long_val(Field(ev, EV_POS)) + orig);
+        assign_Field(ev, EV_POS, Val_long(Long_val(Field(ev, EV_POS)) + orig));
       }
       /* Record event list */
       Store_field(events, i, evl);

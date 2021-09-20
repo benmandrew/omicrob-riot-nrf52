@@ -16,3 +16,5 @@
 .vscode/
 node_modules/
 config.ml
+example/test_def.h
+example/test_ext.h

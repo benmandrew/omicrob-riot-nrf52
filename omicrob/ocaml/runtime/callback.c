@@ -53,23 +53,25 @@ static void init_callback_code(void)
 
 CAMLexport value caml_callbackN_exn(value closure, int narg, value args[])
 {
-  int i;
-  value res;
+  // int i;
+  // value res;
 
-  CAMLassert(narg + 4 <= 256);
+  // CAMLassert(narg + 4 <= 256);
 
-  Caml_state->extern_sp -= narg + 4;
-  for (i = 0; i < narg; i++) Caml_state->extern_sp[i] = args[i]; /* arguments */
-  Caml_state->extern_sp[narg] = (value)(callback_code + 4); /* return address */
-  Caml_state->extern_sp[narg + 1] = Val_unit;    /* environment */
-  Caml_state->extern_sp[narg + 2] = Val_long(0); /* extra args */
-  Caml_state->extern_sp[narg + 3] = closure;
-  if (!callback_code_inited) init_callback_code();
-  callback_code[1] = narg + 3;
-  callback_code[3] = narg;
-  res = caml_interprete(callback_code, sizeof(callback_code));
-  if (Is_exception_result(res)) Caml_state->extern_sp += narg + 4; /* PR#3419 */
-  return res;
+  // Caml_state->extern_sp -= narg + 4;
+  // for (i = 0; i < narg; i++) Caml_state->extern_sp[i] = args[i]; /* arguments */
+  // Caml_state->extern_sp[narg] = (value)(callback_code + 4); /* return address */
+  // Caml_state->extern_sp[narg + 1] = Val_unit;    /* environment */
+  // Caml_state->extern_sp[narg + 2] = Val_long(0); /* extra args */
+  // Caml_state->extern_sp[narg + 3] = closure;
+  // if (!callback_code_inited) init_callback_code();
+  // callback_code[1] = narg + 3;
+  // callback_code[3] = narg;
+  // res = caml_interprete(callback_code, sizeof(callback_code));
+  // if (Is_exception_result(res)) Caml_state->extern_sp += narg + 4; /* PR#3419 */
+  // return res;
+  CAMLassert(false);
+  return -1;
 }
 
 CAMLexport value caml_callback_exn(value closure, value arg1)

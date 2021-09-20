@@ -261,7 +261,7 @@ void caml_oldify_local_roots (void)
        i++) {
     for(glob = caml_globals[i]; *glob != 0; glob++) {
       for (j = 0; j < Wosize_val(*glob); j++){
-        Oldify (&Field (*glob, j));
+        Oldify (Field_address (*glob, j));
       }
     }
   }
@@ -271,7 +271,7 @@ void caml_oldify_local_roots (void)
   iter_list(caml_dyn_globals, lnk) {
     for(glob = (value *) lnk->data; *glob != 0; glob++) {
       for (j = 0; j < Wosize_val(*glob); j++){
-        Oldify (&Field (*glob, j));
+        Oldify (Field_address (*glob, j));
       }
     }
   }
@@ -372,7 +372,7 @@ intnat caml_darken_all_roots_slice (intnat work)
   for (i = 0; caml_globals[i] != 0; i++) {
     for(glob = caml_globals[i]; *glob != 0; glob++) {
       for (j = 0; j < Wosize_val(*glob); j++){
-        caml_darken (Field (*glob, j), &Field (*glob, j));
+        caml_darken (Field (*glob, j), Field_address (*glob, j));
         -- remaining_work;
         if (remaining_work == 0){
           roots_count += work;
@@ -408,7 +408,7 @@ void caml_do_roots (scanning_action f, int do_globals)
     for (i = 0; caml_globals[i] != 0; i++) {
       for(glob = caml_globals[i]; *glob != 0; glob++) {
         for (j = 0; j < Wosize_val(*glob); j++)
-          f (Field (*glob, j), &Field (*glob, j));
+          f (Field (*glob, j), Field_address (*glob, j));
       }
     }
   }
@@ -416,7 +416,7 @@ void caml_do_roots (scanning_action f, int do_globals)
   iter_list(caml_dyn_globals, lnk) {
     for(glob = (value *) lnk->data; *glob != 0; glob++) {
       for (j = 0; j < Wosize_val(*glob); j++){
-        f (Field (*glob, j), &Field (*glob, j));
+        f (Field (*glob, j), Field_address (*glob, j));
       }
     }
   }

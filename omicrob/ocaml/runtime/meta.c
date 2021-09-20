@@ -126,13 +126,13 @@ CAMLprim value caml_reify_bytecode(value ls_prog,
 
   clos = caml_alloc_small (2, Closure_tag);
   Code_val(clos) = (code_t) prog;
-  Closinfo_val(clos) = Make_closinfo(0, 2);
+  assign_Closinfo_val(clos, Make_closinfo(0, 2));
   bytecode = caml_alloc_small (2, Abstract_tag);
   Bytecode_val(bytecode)->prog = prog;
   Bytecode_val(bytecode)->len = len;
   retval = caml_alloc_small (2, 0);
-  Field(retval, 0) = bytecode;
-  Field(retval, 1) = clos;
+  assign_Field(retval, 0, bytecode);
+  assign_Field(retval, 1, clos);
   CAMLreturn (retval);
 }
 
@@ -173,9 +173,9 @@ CAMLprim value caml_realloc_global(value size)
                      requested_size);
     new_global_data = caml_alloc_shr(requested_size, 0);
     for (i = 0; i < actual_size; i++)
-      caml_initialize(&Field(new_global_data, i), Field(caml_global_data, i));
+      caml_initialize(Field_address(new_global_data, i), Field(caml_global_data, i));
     for (i = actual_size; i < requested_size; i++){
-      Field (new_global_data, i) = Val_long (0);
+      assign_Field (new_global_data, i, Val_long (0));
     }
     // Give gc a chance to run, and run memprof callbacks
     caml_global_data = new_global_data;

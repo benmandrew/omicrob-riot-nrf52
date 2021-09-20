@@ -88,8 +88,8 @@ CAMLprim value caml_natdynlink_open(value filename, value global)
   header = caml_input_value_from_block(sym, INT_MAX);
 
   res = caml_alloc_tuple(2);
-  Field(res, 0) = handle;
-  Field(res, 1) = header;
+  assign_Field(res, 0, handle);
+  assign_Field(res, 1, header);
   CAMLreturn(res);
 }
 

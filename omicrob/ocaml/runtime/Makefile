@@ -37,18 +37,21 @@ include $(ROOTDIR)/Makefile.common
 #   dynlink clambda_checks afl bigarray \
 #   memprof domain skiplist codefrag)
 
-BYTECODE_C_SOURCES := $(addsuffix .c, \
-	io gc_ctrl misc sys callback memory signals signals_byt $(UNIX_OR_WIN32) \
-	custom alloc domain freelist compact minor_gc major_gc fail_byt str \
-	codefrag fix_code interp globroots memprof finalise startup_aux \
-	startup_nat roots_byt weak debugger dynlink skiplist floats stacks md5 \
-	backtrace_byt backtrace)
+# BYTECODE_C_SOURCES := $(addsuffix .c, \
+# 	io gc_ctrl misc sys callback memory signals signals_byt $(UNIX_OR_WIN32) \
+# 	custom alloc domain freelist compact minor_gc major_gc fail_byt str \
+# 	codefrag fix_code globroots memprof finalise startup_aux \
+# 	startup_nat roots_byt weak debugger dynlink skiplist floats stacks md5)
 
-NATIVE_C_SOURCES := $(addsuffix .c, \
-	io gc_ctrl misc sys callback memory signals signals_nat $(UNIX_OR_WIN32) \
-	custom alloc domain freelist compact minor_gc major_gc fail_nat str \
-	codefrag globroots memprof finalise startup_aux startup_nat roots_nat weak \
-	debugger dynlink_nat dynlink skiplist floats md5 backtrace_nat backtrace)
+# NATIVE_C_SOURCES := $(addsuffix .c, \
+# 	io gc_ctrl misc sys callback memory signals signals_nat $(UNIX_OR_WIN32) \
+# 	custom alloc domain freelist compact minor_gc major_gc fail_nat str \
+# 	codefrag globroots memprof finalise startup_aux startup_nat roots_nat weak \
+# 	debugger dynlink_nat dynlink skiplist floats md5 backtrace_nat backtrace)
+
+BYTECODE_C_SOURCES :=
+
+NATIVE_C_SOURCES :=
 
 
 GENERATED_HEADERS := caml/opnames.h caml/version.h caml/jumptbl.h
@@ -157,7 +160,7 @@ OC_NATIVE_CPPFLAGS += -DSYS_$(SYSTEM) $(IFLEXDIR)
 OC_DEBUG_CPPFLAGS=-DDEBUG
 OC_INSTR_CPPFLAGS=-DCAML_INSTR
 
-OC_CPPFLAGS += -include test_def.h
+OC_CPPFLAGS += -include test_def.h -Wno-int-conversion -Wno-int-to-pointer-cast
 
 ifeq "$(TOOLCHAIN)" "msvc"
 ASMFLAGS=

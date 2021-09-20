@@ -65,12 +65,12 @@ static void check_head (value v)
   CAMLassert (Is_in_heap (v));
   if (Tag_val (v) == Infix_tag){
     int offset = Wsize_bsize (Infix_offset_val (v));
-    value trueval = Val_op (&Field (v, -offset));
+    value trueval = Val_op (Field_address (v, -offset));
     CAMLassert (Tag_val (trueval) == Closure_tag);
     CAMLassert (Wosize_val (trueval) > offset);
-    CAMLassert (Is_in_heap (&Field (trueval, Wosize_val (trueval) - 1)));
+    CAMLassert (Is_in_heap (Field_address (trueval, Wosize_val (trueval) - 1)));
   }else{
-    CAMLassert (Is_in_heap (&Field (v, Wosize_val (v) - 1)));
+    CAMLassert (Is_in_heap (Field_address (v, Wosize_val (v) - 1)));
   }
   if (Tag_val (v) ==  Double_tag){
     CAMLassert (Wosize_val (v) == Double_wosize);

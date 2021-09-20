@@ -165,7 +165,7 @@ static void intern_cleanup(void)
     intern_extra_block = NULL;
   } else if (intern_block != 0) {
     /* restore original header for heap block, otherwise GC is confused */
-    Hd_val(intern_block) = intern_header;
+    assign_Hd_val(intern_block, intern_header);
     intern_block = 0;
   }
   /* free the recursion stack */
@@ -378,17 +378,17 @@ static void intern_rec(value *dest)
         if (tag == Object_tag) {
           CAMLassert(size >= 2);
           /* Request to read rest of the elements of the block */
-          ReadItems(&Field(v, 2), size - 2);
+          ReadItems(Field_address(v, 2), size - 2);
           /* Request freshing OID */
           PushItem();
           sp->op = OFreshOID;
           sp->dest = (value*) v;
           sp->arg = 1;
           /* Finally read first two block elements: method table and old OID */
-          ReadItems(&Field(v, 0), 2);
+          ReadItems(Field_address(v, 0), 2);
         } else
           /* If it's not an object then read the contents of the block */
-          ReadItems(&Field(v, 0), size);
+          ReadItems(Field_address(v, 0), size);
       }
     } else {
       /* Small integer */
@@ -404,7 +404,7 @@ static void intern_rec(value *dest)
       if (intern_obj_table != NULL) intern_obj_table[obj_counter++] = v;
       *intern_dest = Make_header(size, String_tag, intern_color);
       intern_dest += 1 + size;
-      Field(v, size - 1) = 0;
+      assign_Field(v, size - 1, 0);
       ofs_ind = Bsize_wsize(size) - 1;
       Byte(v, ofs_ind) = ofs_ind - len;
       readblock((char *)String_val(v), len);

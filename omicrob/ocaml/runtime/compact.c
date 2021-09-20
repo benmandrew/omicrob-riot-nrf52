@@ -80,7 +80,7 @@ static void invert_pointer_at (word *p)
       CAMLassert (Is_in_heap (q));
       /* [q] points to some inverted list, insert it. */
       *p = h;
-      Hd_val (q) = eptr (p);
+      assign_Hd_val (q, eptr (p));
       break;
     case Caml_black:
       /* [q] points to an out-of-heap value. Leave it alone. */
@@ -190,7 +190,7 @@ static void do_compaction (intnat new_allocation_policy)
               first_field = 0;
             }
             for (i = first_field; i < wosz; i++){
-              invert_pointer_at ((word *) &Field (v,i));
+              invert_pointer_at ((word *) Field_address (v,i));
             }
           }
         }
@@ -214,11 +214,11 @@ static void do_compaction (intnat new_allocation_policy)
         sz = Wosize_hd (q);
         for (i = 1; i < sz; i++){
           if (Field (p,i) != caml_ephe_none){
-            invert_pointer_at ((word *) &(Field (p,i)));
+            invert_pointer_at ((word *) (Field_address (p,i)));
           }
         }
         invert_pointer_at ((word *) pp);
-        pp = &Field (p, 0);
+        pp = Field_address (p, 0);
       }
     }
   }
@@ -278,10 +278,10 @@ static void do_compaction (intnat new_allocation_policy)
               while (Is_gray_hd (q)){
                 word *pp = dptr (q);
                 q = *pp;
-                *pp = (word) Val_hp ((header_t *) &Field (Val_hp (newadr), i));
+                *pp = (word) Val_hp ((header_t *) Field_address (Val_hp (newadr), i));
               }
               CAMLassert (Tag_hd (q) == Infix_tag);
-              Field (v, i) = q;
+              assign_Field(v, i, q);
               ++i;
             }
           }

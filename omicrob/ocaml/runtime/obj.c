@@ -57,13 +57,13 @@ CAMLprim value caml_obj_raw_field(value arg, value pos)
 
 CAMLprim value caml_obj_set_raw_field(value arg, value pos, value bits)
 {
-  Field(arg, Long_val(pos)) = (value) Nativeint_val(bits);
+  assign_Field(arg, Long_val(pos), (value) Nativeint_val(bits));
   return Val_unit;
 }
 
 CAMLprim value caml_obj_make_forward (value blk, value fwd)
 {
-  caml_modify(&Field(blk, 0), fwd);
+  caml_modify(Field_address(blk, 0), fwd);
   Tag_val (blk) = Forward_tag;
   return Val_unit;
 }
@@ -103,7 +103,7 @@ CAMLprim value caml_obj_block(value tag, value size)
     /* Closinfo_val is the second field, so we need size at least 2 */
     if (sz < 2) caml_invalid_argument ("Obj.new_block");
     res = caml_alloc(sz, tg);
-    Closinfo_val(res) = Make_closinfo(0, 2); /* does not allocate */
+    assign_Closinfo_val(res, Make_closinfo(0, 2)); /* does not allocate */
     break;
   }
   case String_tag: {
@@ -115,7 +115,7 @@ CAMLprim value caml_obj_block(value tag, value size)
        a non-negative number. */
     if (sz == 0) caml_invalid_argument ("Obj.new_block");
     res = caml_alloc(sz, tg);
-    Field (res, sz - 1) = 0;
+    assign_Field (res, sz - 1, 0);
     break;
   }
   case Custom_tag: {
@@ -147,13 +147,13 @@ CAMLprim value caml_obj_with_tag(value new_tag_v, value arg)
     memcpy(Bp_val(res), Bp_val(arg), sz * sizeof(value));
   } else if (sz <= Max_young_wosize) {
     res = caml_alloc_small(sz, tg);
-    for (i = 0; i < sz; i++) Field(res, i) = Field(arg, i);
+    for (i = 0; i < sz; i++) assign_Field(res, i, Field(arg, i));
   } else {
     res = caml_alloc_shr(sz, tg);
     /* It is safe to use [caml_initialize] even if [tag == Closure_tag]
        and some of the "values" being copied are actually code pointers.
        That's because the new "value" does not point to the minor heap. */
-    for (i = 0; i < sz; i++) caml_initialize(&Field(res, i), Field(arg, i));
+    for (i = 0; i < sz; i++) caml_initialize(Field_address(res, i), Field(arg, i));
     /* Give gc a chance to run, and run memprof callbacks */
     caml_process_pending_actions();
   }
@@ -202,19 +202,19 @@ CAMLprim value caml_obj_truncate (value v, value newsize)
      can darken them as appropriate. */
   if (tag < No_scan_tag) {
     for (i = new_wosize; i < wosize; i++){
-      caml_modify(&Field(v, i), Val_unit);
+      caml_modify(Field_address(v, i), Val_unit);
 #ifdef DEBUG
-      Field (v, i) = Debug_free_truncate;
+      assign_Field (v, i, Debug_free_truncate);
 #endif
     }
   }
   /* We must use an odd tag for the header of the leftovers so it does not
      look like a pointer because there may be some references to it in
      ref_table. */
-  Field (v, new_wosize) =
-    Make_header (Wosize_whsize (wosize-new_wosize), Abstract_tag, frag_color);
-  Hd_val (v) =
-    Make_header_with_profinfo (new_wosize, tag, color, Profinfo_val(v));
+  assign_Field (v, new_wosize,
+    Make_header (Wosize_whsize (wosize-new_wosize), Abstract_tag, frag_color));
+  assign_Hd_val (v,
+    Make_header_with_profinfo (new_wosize, tag, color, Profinfo_val(v)));
   return Val_unit;
 }
 
@@ -234,7 +234,7 @@ CAMLprim value caml_lazy_make_forward (value v)
   CAMLlocal1 (res);
 
   res = caml_alloc_small (1, Forward_tag);
-  Field (res, 0) = v;
+  assign_Field (res, 0, v);
   CAMLreturn (res);
 }
 
@@ -258,7 +258,7 @@ CAMLprim value caml_get_public_method (value obj, value tag)
 static value oo_last_id = Val_int(0);
 
 CAMLprim value caml_set_oo_id (value obj) {
-  Field(obj, 1) = oo_last_id;
+  assign_Field(obj, 1, oo_last_id);
   oo_last_id += 2;
   return obj;
 }

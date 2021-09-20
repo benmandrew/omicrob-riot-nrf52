@@ -203,7 +203,7 @@ int caml_page_table_initialize(mlsize_t bytesize);
 #define DEBUG_clear(result, wosize) do{ \
   uintnat caml__DEBUG_i; \
   for (caml__DEBUG_i = 0; caml__DEBUG_i < (wosize); ++ caml__DEBUG_i){ \
-    Field ((result), caml__DEBUG_i) = Debug_uninit_minor; \
+    assign_Field ((result), caml__DEBUG_i, Debug_uninit_minor); \
   } \
 }while(0)
 #else
@@ -473,7 +473,7 @@ struct caml__roots_block {
 #define Store_field(block, offset, val) do{ \
   mlsize_t caml__temp_offset = (offset); \
   value caml__temp_val = (val); \
-  caml_modify (&Field ((block), caml__temp_offset), caml__temp_val); \
+  caml_modify (Field_address ((block), caml__temp_offset), caml__temp_val); \
 }while(0)
 
 /*

@@ -536,10 +536,10 @@ value caml_interprete(code_t prog, asize_t prog_size)
         mlsize_t num_args, i;
         num_args = 1 + extra_args; /* arg1 + extra args */
         Alloc_small(accu, num_args + 3, Closure_tag);
-        Field(accu, 2) = env;
-        for (i = 0; i < num_args; i++) Field(accu, i + 3) = sp[i];
+        assign_Field(accu, 2, env);
+        for (i = 0; i < num_args; i++) assign_Field(accu, i + 3, sp[i]);
         Code_val(accu) = pc - 3; /* Point to the preceding RESTART instr. */
-        Closinfo_val(accu) = Make_closinfo(0, 2);
+        assign_Closinfo_val(accu, Make_closinfo(0, 2));
         sp += num_args;
         pc = (code_t)(sp[0]);
         env = sp[1];
@@ -562,12 +562,12 @@ value caml_interprete(code_t prog, asize_t prog_size)
         /* caml_alloc_shr and caml_initialize never trigger a GC,
            so no need to Setup_for_gc */
         accu = caml_alloc_shr(2 + nvars, Closure_tag);
-        for (i = 0; i < nvars; i++) caml_initialize(&Field(accu, i + 2), sp[i]);
+        for (i = 0; i < nvars; i++) caml_initialize(Field_address(accu, i + 2), sp[i]);
       }
       /* The code pointer is not in the heap, so no need to go through
          caml_initialize. */
       Code_val(accu) = pc + *pc;
-      Closinfo_val(accu) = Make_closinfo(0, 2);
+      assign_Closinfo_val(accu, Make_closinfo(0, 2));
       pc++;
       sp += nvars;
       Next;
@@ -583,21 +583,21 @@ value caml_interprete(code_t prog, asize_t prog_size)
       if (nvars > 0) *--sp = accu;
       if (blksize <= Max_young_wosize) {
         Alloc_small(accu, blksize, Closure_tag);
-        p = &Field(accu, envofs);
+        p = Field_address(accu, envofs);
         for (i = 0; i < nvars; i++, p++) *p = sp[i];
       } else {
         /* PR#6385: must allocate in major heap */
         /* caml_alloc_shr and caml_initialize never trigger a GC,
            so no need to Setup_for_gc */
         accu = caml_alloc_shr(blksize, Closure_tag);
-        p = &Field(accu, envofs);
+        p = Field_address(accu, envofs);
         for (i = 0; i < nvars; i++, p++) caml_initialize(p, sp[i]);
       }
       sp += nvars;
       /* The code pointers and infix headers are not in the heap,
          so no need to go through caml_initialize. */
       *--sp = accu;
-      p = &Field(accu, 0);
+      p = Field_address(accu, 0);
       *p++ = (value) (pc + pc[0]);
       *p++ = Make_closinfo(0, envofs);
       for (i = 1; i < nfuncs; i++) {
@@ -652,7 +652,7 @@ value caml_interprete(code_t prog, asize_t prog_size)
     }
 
     Instruct(SETGLOBAL):
-      caml_modify(&Field(caml_global_data, *pc), accu);
+      caml_modify(Field_address(caml_global_data, *pc), accu);
       accu = Val_unit;
       pc++;
       Next;
@@ -678,12 +678,12 @@ value caml_interprete(code_t prog, asize_t prog_size)
       value block;
       if (wosize <= Max_young_wosize) {
         Alloc_small(block, wosize, tag);
-        Field(block, 0) = accu;
-        for (i = 1; i < wosize; i++) Field(block, i) = *sp++;
+        assign_Field(block, 0, accu);
+        for (i = 1; i < wosize; i++) assign_Field(block, i, *sp++);
       } else {
         block = caml_alloc_shr(wosize, tag);
-        caml_initialize(&Field(block, 0), accu);
-        for (i = 1; i < wosize; i++) caml_initialize(&Field(block, i), *sp++);
+        caml_initialize(Field_address(block, 0), accu);
+        for (i = 1; i < wosize; i++) caml_initialize(Field_address(block, i), *sp++);
       }
       accu = block;
       Next;
@@ -692,7 +692,7 @@ value caml_interprete(code_t prog, asize_t prog_size)
       tag_t tag = *pc++;
       value block;
       Alloc_small(block, 1, tag);
-      Field(block, 0) = accu;
+      assign_Field(block, 0, accu);
       accu = block;
       Next;
     }
@@ -700,8 +700,8 @@ value caml_interprete(code_t prog, asize_t prog_size)
       tag_t tag = *pc++;
       value block;
       Alloc_small(block, 2, tag);
-      Field(block, 0) = accu;
-      Field(block, 1) = sp[0];
+      assign_Field(block, 0, accu);
+      assign_Field(block, 1, sp[0]);
       sp += 1;
       accu = block;
       Next;
@@ -710,9 +710,9 @@ value caml_interprete(code_t prog, asize_t prog_size)
       tag_t tag = *pc++;
       value block;
       Alloc_small(block, 3, tag);
-      Field(block, 0) = accu;
-      Field(block, 1) = sp[0];
-      Field(block, 2) = sp[1];
+      assign_Field(block, 0, accu);
+      assign_Field(block, 1, sp[0]);
+      assign_Field(block, 2, sp[1]);
       sp += 2;
       accu = block;
       Next;
@@ -755,23 +755,23 @@ value caml_interprete(code_t prog, asize_t prog_size)
     }
 
     Instruct(SETFIELD0):
-      caml_modify(&Field(accu, 0), *sp++);
+      caml_modify(Field_address(accu, 0), *sp++);
       accu = Val_unit;
       Next;
     Instruct(SETFIELD1):
-      caml_modify(&Field(accu, 1), *sp++);
+      caml_modify(Field_address(accu, 1), *sp++);
       accu = Val_unit;
       Next;
     Instruct(SETFIELD2):
-      caml_modify(&Field(accu, 2), *sp++);
+      caml_modify(Field_address(accu, 2), *sp++);
       accu = Val_unit;
       Next;
     Instruct(SETFIELD3):
-      caml_modify(&Field(accu, 3), *sp++);
+      caml_modify(Field_address(accu, 3), *sp++);
       accu = Val_unit;
       Next;
     Instruct(SETFIELD):
-      caml_modify(&Field(accu, *pc), *sp++);
+      caml_modify(Field_address(accu, *pc), *sp++);
       accu = Val_unit;
       pc++;
       Next;
@@ -798,7 +798,7 @@ value caml_interprete(code_t prog, asize_t prog_size)
       sp += 1;
       Next;
     Instruct(SETVECTITEM):
-      caml_modify(&Field(accu, Long_val(sp[0])), sp[1]);
+      caml_modify(Field_address(accu, Long_val(sp[0])), sp[1]);
       accu = Val_unit;
       sp += 2;
       Next;
@@ -1070,7 +1070,7 @@ value caml_interprete(code_t prog, asize_t prog_size)
       pc++;
       Next;
     Instruct(OFFSETREF):
-      Field(accu, 0) += *pc << 1;
+      assign_Field(accu, 0, Field(accu, 0) + (*pc << 1));
       accu = Val_unit;
       pc++;
       Next;
@@ -1103,11 +1103,11 @@ value caml_interprete(code_t prog, asize_t prog_size)
       *--sp = accu;
       accu = Val_int(*pc++);
       ofs = *pc & Field(meths,1);
-      if (*(value*)(((char*)&Field(meths,3)) + ofs) == accu) {
+      if (*(value*)(((char*)Field_address(meths,3)) + ofs) == accu) {
 #ifdef CAML_TEST_CACHE
         hits++;
 #endif
-        accu = *(value*)(((char*)&Field(meths,2)) + ofs);
+        accu = *(value*)(((char*)Field_address(meths,2)) + ofs);
       }
       else
       {

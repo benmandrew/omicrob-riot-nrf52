@@ -184,7 +184,8 @@ Caml_inline void caml_ephe_clean_partial (value v,
               || Tag_val (f) == Lazy_tag || Tag_val (f) == Double_tag){
             /* Do not short-circuit the pointer. */
           }else{
-            Field (v, i) = child = f;
+            child = f;
+            assign_Field (v, i, child);
             if (Is_block (f) && Is_young (f))
               add_to_ephe_ref_table(Caml_state_field(ephe_ref_table), v, i);
             goto ephemeron_again;
@@ -194,14 +195,14 @@ Caml_inline void caml_ephe_clean_partial (value v,
       if (Tag_val (child) == Infix_tag) child -= Infix_offset_val (child);
       if (Is_white_val (child) && !Is_young (child)){
         release_data = 1;
-        Field (v, i) = caml_ephe_none;
+        assign_Field (v, i, caml_ephe_none);
       }
     }
   }
 
   child = Field (v, 1);
   if(child != caml_ephe_none){
-    if (release_data) Field (v, 1) = caml_ephe_none;
+    if (release_data) assign_Field (v, 1, caml_ephe_none);
 #ifdef DEBUG
     else if (offset_start == 2 && offset_end == Wosize_hd (Hd_val(v)) &&
              Is_block (child) && Is_in_heap (child)) {

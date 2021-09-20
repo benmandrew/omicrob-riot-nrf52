@@ -1,3 +1,5 @@
+#ifndef __TEST_DEF__
+#define __TEST_DEF__
 #define OCAML_STACK_WOSIZE                64
 #define OCAML_STATIC_HEAP_WOSIZE           3
 #define OCAML_DYNAMIC_HEAP_WOSIZE        253
@@ -68,3 +70,5 @@
 #define OCAML_PUSHCONSTINT_2B            49
 #define OCAML_EQ                         50
 #define OCAML_STOP                       51
+
+#endif

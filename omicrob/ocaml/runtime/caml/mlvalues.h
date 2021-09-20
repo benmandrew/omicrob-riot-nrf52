@@ -132,7 +132,7 @@ bits  63        (64-P) (63-P)        10 9     8 7   0
 #endif /* WITH_PROFINFO */
 
 // #define Hd_val(val) (((header_t *) (val)) [-1])        /* Also an l-value. */
-#define Hd_op(op) (Hd_val (op))                        /* Also an l-value. */
+// #define Hd_op(op) (Hd_val (op))                        /* Also an l-value. */
 #define Hd_bp(bp) (Hd_val (bp))                        /* Also an l-value. */
 #define Hd_hp(hp) (* ((header_t *) (hp)))              /* Also an l-value. */
 #define Hp_val(val) (((header_t *) (val)) - 1)
@@ -235,7 +235,7 @@ CAMLextern value caml_get_public_method (value obj, value tag);
 /* Special case of tuples of fields: closures */
 #define Closure_tag 247
 #define Code_val(val) (((code_t *) (val)) [0])     /* Also an l-value. */
-#define Closinfo_val(val) Field((val), 1)          /* Arity and start env */
+// #define Closinfo_val(val) Field((val), 1)          /* Arity and start env */
 /* In the closure info field, the top 8 bits are the arity (signed).
    The low bit is set to one, to look like an integer.
    The remaining bits are the field number for the first word of the
@@ -355,7 +355,7 @@ CAMLextern int caml_is_double_array (value);   /* 0 is false, 1 is true */
    the GC; therefore, they must not contain any [value].
    See [custom.h] for operations on method suites. */
 #define Custom_tag 255
-#define Data_custom_val(v) ((void *) &Field((v), 1))
+#define Data_custom_val(v) ((void *) Field_address((v), 1))
 struct custom_operations;       /* defined in [custom.h] */
 
 /* Int32.t, Int64.t and Nativeint.t are represented as custom blocks. */

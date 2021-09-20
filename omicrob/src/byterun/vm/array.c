@@ -129,8 +129,8 @@ value caml_array_blit(value tbl1, value ml_ofs1, value tbl2, value ml_ofs2, valu
 /*   else if (size < Max_wosize) { */
 /*     res = caml_alloc_small(size, 0); */
 /*     for (i = 0, pos = 0; i < num_arrays; i++) { */
-/*       memcpy(&Field(res, pos), */
-/*              &Field(arrays[i], offsets[i]), */
+/*       memcpy(Field_address(res, pos), */
+/*              Field_address(arrays[i], offsets[i]), */
 /*              lengths[i] * sizeof(value)); */
 /*       pos += lengths[i]; */
 /*     } */

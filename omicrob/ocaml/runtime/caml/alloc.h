@@ -63,7 +63,7 @@ CAMLextern int caml_convert_flag_list (value, int *);
 Caml_inline value caml_alloc_unboxed (value arg) { return arg; }
 Caml_inline value caml_alloc_boxed (value arg) {
   value result = caml_alloc_small (1, 0);
-  Field (result, 0) = arg;
+  assign_Field(result, 0, arg);
   return result;
 }
 Caml_inline value caml_field_unboxed (value arg) { return arg; }

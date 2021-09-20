@@ -790,7 +790,7 @@ static void extern_rec(value v)
       if (i < sz - 1) {
         sp++;
         if (sp >= extern_stack_limit) sp = extern_resize_stack(sp);
-        sp->v = &Field(v, i + 1);
+        sp->v = Field_address(v, i + 1);
         sp->count = sz - i - 1;
       }
       /* Continue serialization with the first environment field */
@@ -807,7 +807,7 @@ static void extern_rec(value v)
       if (sz > 1) {
         sp++;
         if (sp >= extern_stack_limit) sp = extern_resize_stack(sp);
-        sp->v = &Field(v, 1);
+        sp->v = Field_address(v, 1);
         sp->count = sz - 1;
       }
       /* Continue serialization with the first field */
@@ -1170,7 +1170,7 @@ CAMLprim value caml_obj_reachable_words(value v)
             /* Remember that we need to count fields i + 1 ... sz - 1 */
             sp++;
             if (sp >= extern_stack_limit) sp = extern_resize_stack(sp);
-            sp->v = &Field(v, i + 1);
+            sp->v = Field_address(v, i + 1);
             sp->count = sz - i - 1;
           }
           /* Continue with field i */

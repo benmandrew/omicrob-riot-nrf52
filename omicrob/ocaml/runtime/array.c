@@ -119,7 +119,7 @@ CAMLprim value caml_array_get_float(value array, value index)
 // {
 //   intnat idx = Long_val(index);
 //   if (idx < 0 || idx >= Wosize_val(array)) caml_array_bound_error();
-//   Modify(&Field(array, idx), newval);
+//   Modify(Field_address(array, idx), newval);
 //   return Val_unit;
 // }
 
@@ -135,7 +135,7 @@ CAMLprim value caml_array_set_float(value array, value index, value newval)
 #else
   CAMLassert (Tag_val (array) != Double_array_tag);
   if (idx < 0 || idx >= Wosize_val(array)) caml_array_bound_error();
-  Modify(&Field(array, idx), newval);
+  Modify(Field_address(array, idx), newval);
 #endif
   return Val_unit;
 }
@@ -220,7 +220,7 @@ CAMLprim value caml_floatarray_unsafe_get(value array, value index)
 CAMLprim value caml_array_unsafe_set_addr(value array, value index,value newval)
 {
   intnat idx = Long_val(index);
-  Modify(&Field(array, idx), newval);
+  Modify(Field_address(array, idx), newval);
   return Val_unit;
 }
 
@@ -232,7 +232,7 @@ CAMLprim value caml_array_unsafe_set_float(value array,value index,value newval)
   double d = Double_val (newval);
   Store_double_flat_field(array, idx, d);
 #else
-  Modify(&Field(array, idx), newval);
+  Modify(Field_address(array, idx), newval);
 #endif
   return Val_unit;
 }
@@ -424,8 +424,8 @@ CAMLprim value caml_floatarray_blit(value a1, value ofs1, value a2, value ofs2,
 //        Here too we can do a direct copy since this cannot create
 //        old-to-young pointers, nor mess up with the incremental major GC.
 //        Again, memmove takes care of overlap. */
-//     memmove(&Field(a2, Long_val(ofs2)),
-//             &Field(a1, Long_val(ofs1)),
+//     memmove(Field_address(a2, Long_val(ofs2)),
+//             Field_address(a1, Long_val(ofs1)),
 //             Long_val(n) * sizeof(value));
 //     return Val_unit;
 //   }
@@ -434,15 +434,15 @@ CAMLprim value caml_floatarray_blit(value a1, value ofs1, value a2, value ofs2,
 //   count = Long_val(n);
 //   if (a1 == a2 && Long_val(ofs1) < Long_val(ofs2)) {
 //     /* Copy in descending order */
-//     for (dst = &Field(a2, Long_val(ofs2) + count - 1),
-//            src = &Field(a1, Long_val(ofs1) + count - 1);
+//     for (dst = Field_address(a2, Long_val(ofs2) + count - 1),
+//            src = Field_address(a1, Long_val(ofs1) + count - 1);
 //          count > 0;
 //          count--, src--, dst--) {
 //       caml_modify(dst, *src);
 //     }
 //   } else {
 //     /* Copy in ascending order */
-//     for (dst = &Field(a2, Long_val(ofs2)), src = &Field(a1, Long_val(ofs1));
+//     for (dst = Field_address(a2, Long_val(ofs2)), src = Field_address(a1, Long_val(ofs1));
 //          count > 0;
 //          count--, src++, dst++) {
 //       caml_modify(dst, *src);
@@ -503,8 +503,8 @@ static value caml_array_gather(intnat num_arrays,
        We can use memcpy directly. */
     res = caml_alloc_small(size, 0);
     for (i = 0, pos = 0; i < num_arrays; i++) {
-      memcpy(&Field(res, pos),
-             &Field(arrays[i], offsets[i]),
+      memcpy(Field_address(res, pos),
+             Field_address(arrays[i], offsets[i]),
              lengths[i] * sizeof(value));
       pos += lengths[i];
     }
@@ -518,10 +518,10 @@ static value caml_array_gather(intnat num_arrays,
        using caml_initialize. */
     res = caml_alloc_shr(size, 0);
     for (i = 0, pos = 0; i < num_arrays; i++) {
-      for (src = &Field(arrays[i], offsets[i]), count = lengths[i];
+      for (src = Field_address(arrays[i], offsets[i]), count = lengths[i];
            count > 0;
            count--, src++, pos++) {
-        caml_initialize(&Field(res, pos), *src);
+        caml_initialize(Field_address(res, pos), *src);
       }
     }
     CAMLassert(pos == size);
@@ -618,7 +618,7 @@ CAMLprim value caml_array_fill(value array,
     return Val_unit;
   }
 #endif
-  fp = &Field(array, ofs);
+  fp = Field_address(array, ofs);
   if (Is_young(array)) {
     for (; len > 0; len--, fp++) *fp = val;
   } else {

@@ -125,7 +125,7 @@ void caml_thread_code (code_t code, asize_t len)
   int* l = caml_init_opcode_nargs();
   len /= sizeof(opcode_t);
   for (p = code; p < code + len; /*nothing*/) {
-    opcode_t instr = *p;
+    opcode_t instr = *((opcode_t *) p);
     if (instr < 0 || instr >= FIRST_UNIMPLEMENTED_OP){
       /* FIXME -- should Assert(false) ?
       caml_fatal_error ("in fix_code: bad opcode (%lx)",
@@ -133,14 +133,17 @@ void caml_thread_code (code_t code, asize_t len)
       */
       instr = STOP;
     }
-    *p++ = (opcode_t)(caml_instr_table[instr] - caml_instr_base);
+    *((opcode_t *) p) = (opcode_t)(caml_instr_table[instr] - caml_instr_base);
+    p++;
     if (instr == SWITCH) {
-      uint32_t sizes = *p++;
+      uint32_t sizes = *((opcode_t *) p);
+      p++;
       uint32_t const_size = sizes & 0xFFFF;
       uint32_t block_size = sizes >> 16;
       p += const_size + block_size;
     } else if (instr == CLOSUREREC) {
-      uint32_t nfuncs = *p++;
+      uint32_t nfuncs = *((opcode_t *) p);
+      p++;
       p++;                      /* skip nvars */
       p += nfuncs;
     } else {
@@ -162,9 +165,9 @@ int* caml_init_opcode_nargs()
 void caml_set_instruction(code_t pos, opcode_t instr)
 {
 #ifdef THREADED_CODE
-  *pos = (opcode_t)(caml_instr_table[instr] - caml_instr_base);
+  *((opcode_t *) pos) = (opcode_t)(caml_instr_table[instr] - caml_instr_base);
 #else
-  *pos = instr;
+  *((opcode_t *) pos) = instr;
 #endif
 }
 

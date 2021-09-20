@@ -65,6 +65,15 @@ typedef uint32_t code_t;
 
 #define PRIflag ""
 
+extern value ocaml_stack[];
+extern value ocaml_ram_heap[];
+extern value ocaml_ram_global_data[];
+extern value const ocaml_flash_heap[];
+extern value const ocaml_initial_static_heap[];
+extern value const ocaml_initial_stack[];
+extern value const ocaml_flash_global_data[];
+extern opcode_t const ocaml_bytecode[];
+
 /******************************************************************************/
 /* Value classification */
 
@@ -133,16 +142,37 @@ extern float float_of_value(value v);
 /******************************************************************************/
 /* Blocks */
 
+#define Flash_field(val, i) (Flash_block_val(val)[i])
+#define Flash_string_field(val, i) (((uint8_t *) Flash_block_val(val))[i])
+
 #define Ram_field(val, i) (Ram_block_val(val)[i])
 #define Ram_string_field(val, i) (((uint8_t *) Ram_block_val(val))[i])
 
 #define Field(val, i) (Is_in_ram(val) ? Ram_field(val, i) : Flash_field(val, i))
+
+#define Field_address(val, i) (Is_in_ram(val) ? (Ram_block_val(val) + i) : (Flash_block_val(val) + i))
+
+extern void assign_Field(value* val, int i, value newval);
+
+
+
+
 #define String_field(val, i) (Is_in_ram(val) ? Ram_string_field(val, i) : Flash_string_field(val, i))
 
 #define Ram_hd_val(val) Ram_field(val, -1)
 #define Ram_string_val(val) ((uint8_t *) Ram_block_val(val))
 
 #define Hd_val(val) Field(val, -1)
+
+extern void assign_Hd_val(value* val, value newval);
+
+#define Hd_op(val) (Hd_val(val))
+
+extern void assign_Hd_op(value* val, value newval);
+
+#define Closinfo_val(val) Field((val), 1)
+
+extern void assign_Closinfo_val(value* val, value newval);
 
 #define Make_string_data(c3, c2, c1, c0) (((value) (c0) << 24) | ((value) (c1) << 16) | ((value) (c2) << 8) | ((value) (c3)))
 

@@ -21,17 +21,8 @@
 #error "Invalid virtual architecture, please define OCAML_VIRTUAL_ARCH"
 #endif
 
-#define Flash_field(val, i) (Flash_block_val(val)[i])
-#define Flash_string_field(val, i) (((uint8_t *) Flash_block_val(val))[i])
-
-extern value ocaml_stack[];
-extern value ocaml_ram_heap[];
-extern value ocaml_ram_global_data[];
-extern value const ocaml_flash_heap[];
-extern value const ocaml_initial_static_heap[];
-extern value const ocaml_initial_stack[];
-extern value const ocaml_flash_global_data[];
-extern value const ocaml_bytecode[];
+// #define Flash_field(val, i) (Flash_block_val(val)[i])
+// #define Flash_string_field(val, i) (((uint8_t *) Flash_block_val(val))[i])
 
 // #include "arch-specific.h"
 

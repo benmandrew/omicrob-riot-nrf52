@@ -106,8 +106,8 @@ CAMLexport value caml_ephemeron_create (mlsize_t len)
   if (size < CAML_EPHE_FIRST_KEY || size > Max_wosize)
     caml_invalid_argument ("Weak.create");
   res = caml_alloc_shr (size, Abstract_tag);
-  for (i = 1; i < size; i++) Field (res, i) = caml_ephe_none;
-  Field (res, CAML_EPHE_LINK_OFFSET) = caml_ephe_list_head;
+  for (i = 1; i < size; i++) assign_Field (res, i, caml_ephe_none);
+  assign_Field (res, CAML_EPHE_LINK_OFFSET, caml_ephe_list_head);
   caml_ephe_list_head = res;
   return res;
 }
@@ -166,8 +166,8 @@ static void do_check_key_clean(value ar, mlsize_t offset)
   if (caml_gc_phase == Phase_clean){
     value elt = Field (ar, offset);
     if (elt != caml_ephe_none && Is_Dead_during_clean(elt)){
-      Field(ar, offset) = caml_ephe_none;
-      Field(ar, CAML_EPHE_DATA_OFFSET) = caml_ephe_none;
+      assign_Field(ar, offset, caml_ephe_none);
+      assign_Field(ar, CAML_EPHE_DATA_OFFSET, caml_ephe_none);
     };
   };
 }
@@ -180,8 +180,8 @@ Caml_inline int is_ephe_key_none(value ar, mlsize_t offset)
   if (elt == caml_ephe_none){
     return 1;
   }else if (caml_gc_phase == Phase_clean && Is_Dead_during_clean(elt)){
-    Field(ar, offset) = caml_ephe_none;
-    Field(ar, CAML_EPHE_DATA_OFFSET) = caml_ephe_none;
+    assign_Field(ar, offset, caml_ephe_none);
+    assign_Field(ar, CAML_EPHE_DATA_OFFSET, caml_ephe_none);
     return 1;
   } else {
     return 0;
@@ -193,12 +193,12 @@ static void do_set (value ar, mlsize_t offset, value v)
   if (Is_block (v) && Is_young (v)){
     /* modified version of caml_modify */
     value old = Field (ar, offset);
-    Field (ar, offset) = v;
+    assign_Field (ar, offset, v);
     if (!(Is_block (old) && Is_young (old))){
       add_to_ephe_ref_table (Caml_state->ephe_ref_table, ar, offset);
     }
   }else{
-    Field (ar, offset) = v;
+    assign_Field (ar, offset, v);
   }
 }
 
@@ -226,7 +226,7 @@ CAMLexport void caml_ephemeron_unset_key(value ar, mlsize_t offset)
   offset += CAML_EPHE_FIRST_KEY;
 
   do_check_key_clean(ar, offset);
-  Field (ar, offset) = caml_ephe_none;
+  assign_Field (ar, offset, caml_ephe_none);
 }
 
 CAMLprim value caml_ephe_unset_key (value ar, value n)
@@ -276,7 +276,7 @@ CAMLexport void caml_ephemeron_unset_data (value ar)
 {
   CAMLassert_valid_ephemeron(ar);
 
-  Field (ar, CAML_EPHE_DATA_OFFSET) = caml_ephe_none;
+  assign_Field (ar, CAML_EPHE_DATA_OFFSET, caml_ephe_none);
 }
 
 CAMLprim value caml_ephe_unset_data (value ar)
@@ -292,7 +292,7 @@ static value optionalize(int status, value *x)
   if(status) {
     v = *x;
     res = caml_alloc_small (1, Some_tag);
-    Field (res, 0) = v;
+    assign_Field (res, 0, v);
   } else {
     res = None_val;
   }
@@ -379,7 +379,7 @@ static void copy_value(value src, value dst)
     if (caml_gc_phase == Phase_mark && Must_be_Marked_during_mark(f)){
       caml_darken (f, NULL);
     }
-    caml_modify (&Field (dst, i), f);
+    caml_modify (Field_address (dst, i), f);
   }
 }
 

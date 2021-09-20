@@ -11,6 +11,6 @@ config.ml: $(ETC)/config.ml
 	cp $< $@
 
 clean:
-	@rm -f *.cmo *.cmi *.cmx *~ 
+	@rm -f *.cmo *.cmi *.cmx *~ *.o
 
 .PHONY: omicrob clean

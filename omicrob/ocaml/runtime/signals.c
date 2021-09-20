@@ -474,7 +474,7 @@ CAMLprim value caml_install_signal_handler(value signal_number, value action)
     break;
   case 2:                       /* was Signal_handle */
     res = caml_alloc_small (1, 0);
-    Field(res, 0) = Field(caml_signal_handlers, sig);
+    assign_Field(res, 0, Field(caml_signal_handlers, sig));
     break;
   default:                      /* error in caml_set_signal_action */
     caml_sys_error(NO_ARG);
@@ -484,7 +484,7 @@ CAMLprim value caml_install_signal_handler(value signal_number, value action)
       caml_signal_handlers = caml_alloc(NSIG, 0);
       caml_register_global_root(&caml_signal_handlers);
     }
-    caml_modify(&Field(caml_signal_handlers, sig), Field(action, 0));
+    caml_modify(Field_address(caml_signal_handlers, sig), Field(action, 0));
   }
   caml_raise_if_exception(caml_process_pending_signals_exn());
   CAMLreturn (res);

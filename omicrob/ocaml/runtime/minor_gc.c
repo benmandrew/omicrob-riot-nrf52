@@ -209,24 +209,24 @@ void caml_oldify_one (value v, value *p)
         result = caml_alloc_shr_for_minor_gc (sz, tag, hd);
         *p = result;
         field0 = Field (v, 0);
-        Hd_val (v) = 0;            /* Set forward flag */
-        Field (v, 0) = result;     /*  and forward pointer. */
+        assign_Hd_val (v, 0);            /* Set forward flag */
+        assign_Field (v, 0, result);     /*  and forward pointer. */
         if (sz > 1){
-          Field (result, 0) = field0;
-          Field (result, 1) = oldify_todo_list;    /* Add this block */
+          assign_Field (result, 0, field0);
+          assign_Field (result, 1, oldify_todo_list);    /* Add this block */
           oldify_todo_list = v;                    /*  to the "to do" list. */
         }else{
           CAMLassert (sz == 1);
-          p = &Field (result, 0);
+          p = Field_address (result, 0);
           v = field0;
           goto tail_call;
         }
       }else if (tag >= No_scan_tag){
         sz = Wosize_hd (hd);
         result = caml_alloc_shr_for_minor_gc (sz, tag, hd);
-        for (i = 0; i < sz; i++) Field (result, i) = Field (v, i);
-        Hd_val (v) = 0;            /* Set forward flag */
-        Field (v, 0) = result;     /*  and forward pointer. */
+        for (i = 0; i < sz; i++) assign_Field (result, i, Field (v, i));
+        assign_Hd_val (v, 0);            /* Set forward flag */
+        assign_Field (v, 0, result);     /*  and forward pointer. */
         *p = result;
       }else if (tag == Infix_tag){
         mlsize_t offset = Infix_offset_hd (hd);
@@ -258,9 +258,9 @@ void caml_oldify_one (value v, value *p)
           CAMLassert (Wosize_hd (hd) == 1);
           result = caml_alloc_shr_for_minor_gc (1, Forward_tag, hd);
           *p = result;
-          Hd_val (v) = 0;             /* Set (GC) forward flag */
-          Field (v, 0) = result;      /*  and forward pointer. */
-          p = &Field (result, 0);
+          assign_Hd_val (v, 0);             /* Set (GC) forward flag */
+          assign_Field (v, 0, result);      /*  and forward pointer. */
+          p = Field_address (result, 0);
           v = f;
           goto tail_call;
         }else{
@@ -311,14 +311,14 @@ void caml_oldify_mopup (void)
 
     f = Field (new_v, 0);
     if (Is_block (f) && Is_young (f)){
-      caml_oldify_one (f, &Field (new_v, 0));
+      caml_oldify_one (f, Field_address (new_v, 0));
     }
     for (i = 1; i < Wosize_val (new_v); i++){
       f = Field (v, i);
       if (Is_block (f) && Is_young (f)){
-        caml_oldify_one (f, &Field (new_v, i));
+        caml_oldify_one (f, Field_address (new_v, i));
       }else{
-        Field (new_v, i) = f;
+        assign_Field (new_v, i, f);
       }
     }
   }
@@ -329,7 +329,7 @@ void caml_oldify_mopup (void)
        re < Caml_state->ephe_ref_table->ptr; re++){
     /* look only at ephemeron with data in the minor heap */
     if (re->offset == 1){
-      value *data = &Field(re->ephe,1), v = *data;
+      value *data = Field_address(re->ephe,1), v = *data;
       if (v != caml_ephe_none && Is_block (v) && Is_young (v)){
         mlsize_t offs = Tag_val(v) == Infix_tag ? Infix_offset_val(v) : 0;
         v -= offs;
@@ -381,7 +381,7 @@ void caml_empty_minor_heap (void)
          re < Caml_state->ephe_ref_table->ptr; re++){
       if(re->offset < Wosize_val(re->ephe)){
         /* If it is not the case, the ephemeron has been truncated */
-        value *key = &Field(re->ephe,re->offset), v = *key;
+        value *key = Field_address(re->ephe,re->offset), v = *key;
         if (v != caml_ephe_none && Is_block (v) && Is_young (v)){
           mlsize_t offs = Tag_val (v) == Infix_tag ? Infix_offset_val (v) : 0;
           v -= offs;
@@ -390,7 +390,7 @@ void caml_empty_minor_heap (void)
           }else{ /* Value not copied so it's dead */
             CAMLassert(!ephe_check_alive_data(re));
             *key = caml_ephe_none;
-            Field(re->ephe,1) = caml_ephe_none;
+            assign_Field(re->ephe,1, caml_ephe_none);
           }
         }
       }

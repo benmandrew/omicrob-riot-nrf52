@@ -41,7 +41,7 @@ def createHeaderFile(ls: List[str]) -> None:
   defines = ls[:defineIdx]
   # declarations = [extractHeader(ls, var) for var in variables]
   # s = "\n".join(defines + declarations)
-  s = "\n".join(defines)
+  s = "\n".join(["#ifndef __TEST_DEF__", "#define __TEST_DEF__"] + defines + ["#endif"])
   with open("example/test_def.h", "w") as f:
     f.write(s)
   return defineIdx

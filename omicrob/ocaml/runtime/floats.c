@@ -93,8 +93,8 @@ CAMLexport void caml_Store_double_val(value val, double dbl)
 
   CAMLassert(sizeof(double) == 2 * sizeof(value));
   buffer.d = dbl;
-  Field(val, 0) = buffer.v[0];
-  Field(val, 1) = buffer.v[1];
+  assign_Field(val, 0, buffer.v[0]);
+  assign_Field(val, 1, buffer.v[1]);
 }
 
 #endif
@@ -104,17 +104,17 @@ CAMLexport void caml_Store_double_val(value val, double dbl)
  standard "C" locale by default, but it is possible that
  third-party code loaded into process does.
 */
-#ifdef HAS_LOCALE
-locale_t caml_locale = (locale_t)0;
-#endif
+// #ifdef HAS_LOCALE
+// locale_t caml_locale = (locale_t)0;
+// #endif
 
 #if defined(_MSC_VER) || defined(__MINGW32__)
 /* there is no analogue to uselocale in MSVC so just set locale for thread */
 #define USE_LOCALE setlocale(LC_NUMERIC,"C")
 #define RESTORE_LOCALE do {} while(0)
 #elif defined(HAS_LOCALE)
-#define USE_LOCALE locale_t saved_locale = uselocale(caml_locale)
-#define RESTORE_LOCALE uselocale(saved_locale)
+// #define USE_LOCALE locale_t saved_locale = uselocale(caml_locale)
+// #define RESTORE_LOCALE uselocale(saved_locale)
 #else
 #define USE_LOCALE do {} while(0)
 #define RESTORE_LOCALE do {} while(0)
@@ -126,22 +126,22 @@ void caml_init_locale(void)
   _configthreadlocale(_ENABLE_PER_THREAD_LOCALE);
 #endif
 #ifdef HAS_LOCALE
-  if ((locale_t)0 == caml_locale)
-  {
-#if defined(_MSC_VER)
-    caml_locale = _create_locale(LC_NUMERIC, "C");
-#else
-    caml_locale = newlocale(LC_NUMERIC_MASK,"C",(locale_t)0);
-#endif
-  }
+//   if ((locale_t)0 == caml_locale)
+//   {
+// #if defined(_MSC_VER)
+//     caml_locale = _create_locale(LC_NUMERIC, "C");
+// #else
+//     caml_locale = newlocale(LC_NUMERIC_MASK,"C",(locale_t)0);
+// #endif
+//   }
 #endif
 }
 
 void caml_free_locale(void)
 {
 #ifdef HAS_LOCALE
-  if ((locale_t)0 != caml_locale) freelocale(caml_locale);
-  caml_locale = (locale_t)0;
+  // if ((locale_t)0 != caml_locale) freelocale(caml_locale);
+  // caml_locale = (locale_t)0;
 #endif
 }
 
@@ -165,7 +165,7 @@ CAMLexport void caml_Store_double_array_field(value val, mlsize_t i, double dbl)
   value d = caml_copy_double (dbl);
 
   CAMLassert (Tag_val (val) != Double_array_tag);
-  caml_modify (&Field(val, i), d);
+  caml_modify (Field_address(val, i), d);
   CAMLreturn0;
 }
 #endif /* ! FLAT_FLOAT_ARRAY */
@@ -178,9 +178,9 @@ CAMLprim value caml_format_float(value fmt, value arg)
 #ifdef HAS_BROKEN_PRINTF
   if (isfinite(d)) {
 #endif
-    USE_LOCALE;
-    res = caml_alloc_sprintf(String_val(fmt), d);
-    RESTORE_LOCALE;
+    // USE_LOCALE;
+    // res = caml_alloc_sprintf(String_val(fmt), d);
+    // RESTORE_LOCALE;
 #ifdef HAS_BROKEN_PRINTF
   } else {
     if (isnan(d)) {
@@ -402,7 +402,7 @@ CAMLprim value caml_float_of_string(value vs)
   } else {
     /* Convert using strtod */
 #if defined(HAS_STRTOD_L) && defined(HAS_LOCALE)
-    d = strtod_l((const char *) buf, &end, caml_locale);
+    // d = strtod_l((const char *) buf, &end, caml_locale);
 #else
     USE_LOCALE;
     d = strtod((const char *) buf, &end);
@@ -752,8 +752,8 @@ CAMLprim value caml_frexp_float(value f)
 
   mantissa = caml_copy_double(frexp (Double_val(f), &exponent));
   res = caml_alloc_tuple(2);
-  Field(res, 0) = mantissa;
-  Field(res, 1) = Val_int(exponent);
+  assign_Field(res, 0, mantissa);
+  assign_Field(res, 1, Val_int(exponent));
   CAMLreturn (res);
 }
 
@@ -789,8 +789,8 @@ CAMLprim value caml_modf_float(value f)
   quo = caml_copy_double(modf (Double_val(f), &frem));
   rem = caml_copy_double(frem);
   res = caml_alloc_tuple(2);
-  Field(res, 0) = quo;
-  Field(res, 1) = rem;
+  assign_Field(res, 0, quo);
+  assign_Field(res, 1, rem);
   CAMLreturn (res);
 }
 

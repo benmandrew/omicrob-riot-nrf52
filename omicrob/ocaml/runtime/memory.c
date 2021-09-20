@@ -382,7 +382,8 @@ static value *expand_heap (mlsize_t request)
 #endif
     hp += Whsize_wosize (Max_wosize);
     remain -= Whsize_wosize (Max_wosize);
-    Field (Val_hp (mem), 1) = Field (Val_hp (prev), 0) = Val_hp (hp);
+    assign_Field (Val_hp (mem), 1, Val_hp(hp));
+    assign_Field (Val_hp (prev), 0, Val_hp(hp));
     prev = hp;
   }
   if (remain > 1){
@@ -390,10 +391,11 @@ static value *expand_heap (mlsize_t request)
 #ifdef DEBUG
     caml_set_fields (Val_hp (hp), 0, Debug_free_major);
 #endif
-    Field (Val_hp (mem), 1) = Field (Val_hp (prev), 0) = Val_hp (hp);
-    Field (Val_hp (hp), 0) = (value) NULL;
+    assign_Field (Val_hp (mem), 1, Val_hp(hp));
+    assign_Field (Val_hp (prev), 0, Val_hp (hp));
+    assign_Field (Val_hp (hp), 0, (value) NULL);
   }else{
-    Field (Val_hp (prev), 0) = (value) NULL;
+    assign_Field (Val_hp (prev), 0, (value) NULL);
     if (remain == 1) {
       Hd_hp (hp) = Make_header (0, 0, Caml_white);
     }
@@ -515,7 +517,7 @@ Caml_inline value caml_alloc_shr_aux (mlsize_t wosize, tag_t tag, int track,
   {
     uintnat i;
     for (i = 0; i < wosize; i++){
-      Field (Val_hp (hp), i) = Debug_uninit_major;
+      assign_Field (Val_hp (hp), i, Debug_uninit_major);
     }
   }
 #endif

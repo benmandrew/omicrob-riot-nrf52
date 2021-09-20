@@ -342,22 +342,23 @@ static uintnat rand_binom(uintnat len)
    or 0 in out-of-memory scenarios. */
 static value capture_callstack_postponed()
 {
-  value res;
-  intnat callstack_len =
-    caml_collect_current_callstack(&callstack_buffer, &callstack_buffer_len,
-                                   callstack_size, -1);
-  if (callstack_len == 0)
-    return Atom(0);
-  res = caml_alloc_shr_no_track_noexc(callstack_len, 0);
-  if (res == 0)
-    return Atom(0);
-  memcpy(Op_val(res), callstack_buffer, sizeof(value) * callstack_len);
-  if (callstack_buffer_len > 256 && callstack_buffer_len > callstack_len * 8) {
-    caml_stat_free(callstack_buffer);
-    callstack_buffer = NULL;
-    callstack_buffer_len = 0;
-  }
-  return res;
+  // value res;
+  // intnat callstack_len =
+  //   caml_collect_current_callstack(&callstack_buffer, &callstack_buffer_len,
+  //                                  callstack_size, -1);
+  // if (callstack_len == 0)
+  //   return Atom(0);
+  // res = caml_alloc_shr_no_track_noexc(callstack_len, 0);
+  // if (res == 0)
+  //   return Atom(0);
+  // memcpy(Op_val(res), callstack_buffer, sizeof(value) * callstack_len);
+  // if (callstack_buffer_len > 256 && callstack_buffer_len > callstack_len * 8) {
+  //   caml_stat_free(callstack_buffer);
+  //   callstack_buffer = NULL;
+  //   callstack_buffer_len = 0;
+  // }
+  // return res;
+  return 0;
 }
 
 /* In this version, we are allowed to call the GC, so we use
@@ -366,19 +367,20 @@ static value capture_callstack_postponed()
    Should be called with [local->suspended == 1] */
 static value capture_callstack(int alloc_idx)
 {
-  value res;
-  intnat callstack_len =
-    caml_collect_current_callstack(&callstack_buffer, &callstack_buffer_len,
-                                   callstack_size, alloc_idx);
-  CAMLassert(local->suspended);
-  res = caml_alloc(callstack_len, 0);
-  memcpy(Op_val(res), callstack_buffer, sizeof(value) * callstack_len);
-  if (callstack_buffer_len > 256 && callstack_buffer_len > callstack_len * 8) {
-    caml_stat_free(callstack_buffer);
-    callstack_buffer = NULL;
-    callstack_buffer_len = 0;
-  }
-  return res;
+  // value res;
+  // intnat callstack_len =
+  //   caml_collect_current_callstack(&callstack_buffer, &callstack_buffer_len,
+  //                                  callstack_size, alloc_idx);
+  // CAMLassert(local->suspended);
+  // res = caml_alloc(callstack_len, 0);
+  // memcpy(Op_val(res), callstack_buffer, sizeof(value) * callstack_len);
+  // if (callstack_buffer_len > 256 && callstack_buffer_len > callstack_len * 8) {
+  //   caml_stat_free(callstack_buffer);
+  //   callstack_buffer = NULL;
+  //   callstack_buffer_len = 0;
+  // }
+  // return res;
+  return 0;
 }
 
 /**** Managing data structures for tracked blocks. ****/
@@ -514,10 +516,10 @@ static value run_alloc_callback_exn(uintnat t_idx)
 
   CAMLassert(Is_block(t->block) || Is_placeholder(t->block) || t->deallocated);
   sample_info = caml_alloc_small(4, 0);
-  Field(sample_info, 0) = Val_long(t->n_samples);
-  Field(sample_info, 1) = Val_long(t->wosize);
-  Field(sample_info, 2) = Val_long(t->source);
-  Field(sample_info, 3) = t->user_data;
+  assign_Field(sample_info, 0, Val_long(t->n_samples));
+  assign_Field(sample_info, 1, Val_long(t->wosize));
+  assign_Field(sample_info, 2, Val_long(t->source));
+  assign_Field(sample_info, 3, t->user_data);
   return run_callback_exn(&local->entries, t_idx,
      t->alloc_young ? Alloc_minor(tracker) : Alloc_major(tracker), sample_info);
 }

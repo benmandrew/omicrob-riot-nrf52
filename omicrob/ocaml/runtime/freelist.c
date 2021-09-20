@@ -50,9 +50,19 @@ value caml_fl_merge = Val_NULL;  /* Current insertion pointer.  Managed
 /* Next in list */
 #define Next_small(v) Field ((v), 0)
 
+#define Next_small_address(v) Field_address ((v), 0)
+
+void assign_Next_small(value* v, value newv) {
+  if (Is_in_ram(v)) {
+    Ram_field(v, -1) = newv;
+  } else {
+    Flash_field(v, -1) = newv;
+  }
+}
+
 /* Next in memory order */
 Caml_inline value Next_in_mem (value v) {
-  return (value) &Field ((v), Whsize_val (v));
+  return (value) Field_address ((v), Whsize_val (v));
 }
 
 #ifdef CAML_INSTR
@@ -130,7 +140,7 @@ static header_t *nf_allocate_block (mlsize_t wh_sz, value prev, value cur)
   CAMLassert (Whsize_hd (h) >= wh_sz);
   if (Wosize_hd (h) < wh_sz + 1){                        /* Cases 0 and 1. */
     caml_fl_cur_wsz -= Whsize_hd (h);
-    Next_small (prev) = Next_small (cur);
+    assign_Next_small (prev, Next_small (cur));
     CAMLassert (Is_in_heap (Next_small (prev))
                 || Next_small (prev) == Val_NULL);
     if (caml_fl_merge == cur) caml_fl_merge = prev;
@@ -140,13 +150,13 @@ static header_t *nf_allocate_block (mlsize_t wh_sz, value prev, value cur)
       /* In case 1, the following creates the empty block correctly.
          In case 0, it gives an invalid header to the block.  The function
          calling [nf_allocate] will overwrite it. */
-    Hd_op (cur) = Make_header (0, 0, Caml_white);
+    assign_Hd_op (cur, Make_header (0, 0, Caml_white));
   }else{                                                        /* Case 2. */
     caml_fl_cur_wsz -= wh_sz;
-    Hd_op (cur) = Make_header (Wosize_hd (h) - wh_sz, 0, Caml_blue);
+    assign_Hd_op (cur, Make_header (Wosize_hd (h) - wh_sz, 0, Caml_blue));
   }
   nf_prev = prev;
-  return (header_t *) &Field (cur, Wosize_hd (h) - wh_sz);
+  return (header_t *) Field_address (cur, Wosize_hd (h) - wh_sz);
 }
 
 static header_t *nf_allocate (mlsize_t wo_sz)
@@ -204,7 +214,7 @@ static void nf_init_merge (void)
 
 static void nf_init (void)
 {
-  Next_small (Nf_head) = Val_NULL;
+  assign_Next_small (Nf_head, Val_NULL);
   nf_prev = Nf_head;
   caml_fl_cur_wsz = 0;
 }
@@ -245,7 +255,7 @@ static header_t *nf_merge_block (value bp, char *limit)
     if (bp_whsz <= Max_wosize){
       hd = Make_header (bp_whsz, 0, Caml_white);
       bp = (value) nf_last_fragment;
-      Hd_val (bp) = hd;
+      assign_Hd_val (bp, hd);
       caml_fl_cur_wsz += Whsize_wosize (0);
     }
   }
@@ -258,15 +268,15 @@ static header_t *nf_merge_block (value bp, char *limit)
     mlsize_t cur_whsz = Whsize_val (cur);
 
     if (Wosize_hd (hd) + cur_whsz <= Max_wosize){
-      Next_small (prev) = next_cur;
+      assign_Next_small (prev, next_cur);
       if (nf_prev == cur) nf_prev = prev;
       hd = Make_header (Wosize_hd (hd) + cur_whsz, 0, Caml_blue);
-      Hd_val (bp) = hd;
+      assign_Hd_val (bp, hd);
       adj = Next_in_mem (bp);
 #ifdef DEBUG
       nf_last = Val_NULL;
-      Next_small (cur) = (value) Debug_free_major;
-      Hd_val (cur) = Debug_free_major;
+      assign_Next_small (cur, (value) Debug_free_major);
+      assign_Hd_val (cur, Debug_free_major);
 #endif
       cur = next_cur;
     }
@@ -275,15 +285,15 @@ static header_t *nf_merge_block (value bp, char *limit)
      the free-list if it is big enough. */
   prev_wosz = Wosize_val (prev);
   if (Next_in_mem (prev) == bp && prev_wosz + Whsize_hd (hd) < Max_wosize){
-    Hd_val (prev) = Make_header (prev_wosz + Whsize_hd (hd), 0, Caml_blue);
+    assign_Hd_val (prev, Make_header (prev_wosz + Whsize_hd (hd), 0, Caml_blue));
 #ifdef DEBUG
-    Hd_val (bp) = Debug_free_major;
+    assign_Hd_val (bp, Debug_free_major);
 #endif
     CAMLassert (caml_fl_merge == prev);
   }else if (Wosize_hd (hd) != 0){
-    Hd_val (bp) = Bluehd_hd (hd);
-    Next_small (bp) = cur;
-    Next_small (prev) = bp;
+    assign_Hd_val (bp, Bluehd_hd (hd));
+    assign_Next_small (bp, cur);
+    assign_Next_small (prev, bp);
     caml_fl_merge = bp;
   }else{
     /* This is a fragment.  Leave it in white but remember it for eventual
@@ -316,7 +326,7 @@ static void nf_add_blocks (value bp)
   } while (cur != Val_NULL);
 
   if (Bp_val (bp) > Bp_val (nf_last)){
-    Next_small (nf_last) = bp;
+    assign_Next_small (nf_last, bp);
     if (nf_last == caml_fl_merge && (char *) bp < caml_gc_sweep_hp){
       caml_fl_merge = Field (bp, 1);
     }
@@ -332,8 +342,8 @@ static void nf_add_blocks (value bp)
     }
     CAMLassert (Bp_val (prev) < Bp_val (bp) || prev == Nf_head);
     CAMLassert (Bp_val (cur) > Bp_val (bp) || cur == Val_NULL);
-    Next_small (Field (bp, 1)) = cur;
-    Next_small (prev) = bp;
+    assign_Next_small (Field (bp, 1), cur);
+    assign_Next_small (prev, bp);
     /* When inserting blocks between [caml_fl_merge] and [caml_gc_sweep_hp],
        we must advance [caml_fl_merge] to the new block, so that [caml_fl_merge]
        is always the last free-list block before [caml_gc_sweep_hp]. */
@@ -434,7 +444,7 @@ static header_t *ff_allocate_block (mlsize_t wh_sz, int flpi, value prev,
   CAMLassert (Whsize_hd (h) >= wh_sz);
   if (Wosize_hd (h) < wh_sz + 1){                        /* Cases 0 and 1. */
     caml_fl_cur_wsz -= Whsize_hd (h);
-    Next_small (prev) = Next_small (cur);
+    assign_Next_small (prev, Next_small (cur));
     CAMLassert (Is_in_heap (Next_small (prev))
                 || Next_small (prev) == Val_NULL);
     if (caml_fl_merge == cur) caml_fl_merge = prev;
@@ -444,7 +454,7 @@ static header_t *ff_allocate_block (mlsize_t wh_sz, int flpi, value prev,
       /* In case 1, the following creates the empty block correctly.
          In case 0, it gives an invalid header to the block.  The function
          calling [ff_allocate] will overwrite it. */
-    Hd_op (cur) = Make_header (0, 0, Caml_white);
+    assign_Hd_op (cur, Make_header (0, 0, Caml_white));
     if (flpi + 1 < flp_size && flp[flpi + 1] == cur){
       flp[flpi + 1] = prev;
     }else if (flpi == flp_size - 1){
@@ -453,9 +463,9 @@ static header_t *ff_allocate_block (mlsize_t wh_sz, int flpi, value prev,
     }
   }else{                                                        /* Case 2. */
     caml_fl_cur_wsz -= wh_sz;
-    Hd_op (cur) = Make_header (Wosize_hd (h) - wh_sz, 0, Caml_blue);
+    assign_Hd_op (cur, Make_header (Wosize_hd (h) - wh_sz, 0, Caml_blue));
   }
-  return (header_t *) &Field (cur, Wosize_hd (h) - wh_sz);
+  return (header_t *) Field_address (cur, Wosize_hd (h) - wh_sz);
 }
 
 static header_t *ff_allocate (mlsize_t wo_sz)
@@ -640,7 +650,7 @@ static void ff_truncate_flp (value changed)
 
 static void ff_init (void)
 {
-  Next_small (Ff_head) = Val_NULL;
+  assign_Next_small (Ff_head, Val_NULL);
   ff_truncate_flp (Ff_head);
   caml_fl_cur_wsz = 0;
 }
@@ -683,7 +693,7 @@ static header_t *ff_merge_block (value bp, char *limit)
     if (bp_whsz <= Max_wosize){
       hd = Make_header (bp_whsz, 0, Caml_white);
       bp = (value) ff_last_fragment;
-      Hd_val (bp) = hd;
+      assign_Hd_val (bp, hd);
       caml_fl_cur_wsz += Whsize_wosize (0);
     }
   }
@@ -696,14 +706,14 @@ static header_t *ff_merge_block (value bp, char *limit)
     mlsize_t cur_whsz = Whsize_val (cur);
 
     if (Wosize_hd (hd) + cur_whsz <= Max_wosize){
-      Next_small (prev) = next_cur;
+      assign_Next_small (prev, next_cur);
       hd = Make_header (Wosize_hd (hd) + cur_whsz, 0, Caml_blue);
-      Hd_val (bp) = hd;
+      assign_Hd_val (bp, hd);
       adj = Next_in_mem (bp);
 #ifdef DEBUG
       ff_last = Val_NULL;
-      Next_small (cur) = (value) Debug_free_major;
-      Hd_val (cur) = Debug_free_major;
+      assign_Next_small (cur, (value) Debug_free_major);
+      assign_Hd_val (cur, Debug_free_major);
 #endif
       cur = next_cur;
     }
@@ -712,15 +722,15 @@ static header_t *ff_merge_block (value bp, char *limit)
      the free-list if it is big enough. */
   prev_wosz = Wosize_val (prev);
   if (Next_in_mem (prev) == bp && prev_wosz + Whsize_hd (hd) < Max_wosize){
-    Hd_val (prev) = Make_header (prev_wosz + Whsize_hd (hd), 0, Caml_blue);
+    assign_Hd_val (prev, Make_header (prev_wosz + Whsize_hd (hd), 0, Caml_blue));
 #ifdef DEBUG
-    Hd_val (bp) = Debug_free_major;
+    assign_Hd_val (bp, Debug_free_major);
 #endif
     CAMLassert (caml_fl_merge == prev);
   }else if (Wosize_hd (hd) != 0){
-    Hd_val (bp) = Bluehd_hd (hd);
-    Next_small (bp) = cur;
-    Next_small (prev) = bp;
+    assign_Hd_val (bp, Bluehd_hd (hd));
+    assign_Next_small (bp, cur);
+    assign_Next_small (prev, bp);
     caml_fl_merge = bp;
   }else{
     /* This is a fragment.  Leave it in white but remember it for eventual
@@ -753,7 +763,7 @@ static void ff_add_blocks (value bp)
   } while (cur != Val_NULL);
 
   if (Bp_val (bp) > Bp_val (ff_last)){
-    Next_small (ff_last) = bp;
+    assign_Next_small (ff_last, bp);
     if (ff_last == caml_fl_merge && (char *) bp < caml_gc_sweep_hp){
       caml_fl_merge = Field (bp, 1);
     }
@@ -773,8 +783,8 @@ static void ff_add_blocks (value bp)
     }
     CAMLassert (Bp_val (prev) < Bp_val (bp) || prev == Ff_head);
     CAMLassert (Bp_val (cur) > Bp_val (bp) || cur == Val_NULL);
-    Next_small (Field (bp, 1)) = cur;
-    Next_small (prev) = bp;
+    assign_Next_small (Field (bp, 1), cur);
+    assign_Next_small (prev, bp);
     /* When inserting blocks between [caml_fl_merge] and [caml_gc_sweep_hp],
        we must advance [caml_fl_merge] to the new block, so that [caml_fl_merge]
        is always the last free-list block before [caml_gc_sweep_hp]. */
@@ -949,13 +959,13 @@ static void bf_check (void)
     }else{
       CAMLassert (caml_gc_phase != Phase_sweep
                   || caml_fl_merge == Val_NULL
-                  || bf_small_fl[i].merge < &Next_small(caml_fl_merge));
+                  || bf_small_fl[i].merge < Next_small_address(caml_fl_merge));
     }
     CAMLassert (*bf_small_fl[i].merge == Val_NULL
                 || Color_val (*bf_small_fl[i].merge) == Caml_blue);
     if (bf_small_fl[i].free != Val_NULL) map |= 1 << (i-1);
     for (b = bf_small_fl[i].free; b != Val_NULL; b = Next_small (b)){
-      if (bf_small_fl[i].merge == &Next_small (b)) merge_found = 1;
+      if (bf_small_fl[i].merge == Next_small_address (b)) merge_found = 1;
       CAMLassert (Wosize_val (b) == i);
       total_size += Whsize_wosize (i);
       if (Color_val (b) == Caml_blue){
@@ -1286,10 +1296,10 @@ static void bf_insert_remnant_small (value v)
       && (caml_gc_phase != Phase_sweep
           || (char *) Hp_val (v) < (char *) caml_gc_sweep_hp)){
     caml_fl_cur_wsz += Whsize_wosize (wosz);
-    Next_small (v) = bf_small_fl[wosz].free;
+    assign_Next_small (v, bf_small_fl[wosz].free);
     bf_small_fl[wosz].free = v;
     if (bf_small_fl[wosz].merge == &bf_small_fl[wosz].free){
-      bf_small_fl[wosz].merge = &Next_small (v);
+      bf_small_fl[wosz].merge = Next_small_address (v);
     }
     set_map (wosz);
   }
@@ -1331,11 +1341,11 @@ static void bf_insert_sweep (value v)
         break;
       }
       if (Bp_val (next) >= Bp_val (v)) break;
-      bf_small_fl[wosz].merge = &Next_small (next);
+      bf_small_fl[wosz].merge = Next_small_address (next);
     }
-    Next_small (v) = *bf_small_fl[wosz].merge;
+    assign_Next_small (v, *bf_small_fl[wosz].merge);
     *bf_small_fl[wosz].merge = v;
-    bf_small_fl[wosz].merge = &Next_small (v);
+    bf_small_fl[wosz].merge = Next_small_address (v);
   }else{
     bf_insert_block ((large_free_block *) v);
   }
@@ -1350,7 +1360,7 @@ static void bf_remove (value v)
   if (wosz <= BF_NUM_SMALL){
     while (*bf_small_fl[wosz].merge != v){
       CAMLassert (Bp_val (*bf_small_fl[wosz].merge) < Bp_val (v));
-      bf_small_fl[wosz].merge = &Next_small (*bf_small_fl[wosz].merge);
+      bf_small_fl[wosz].merge = Next_small_address (*bf_small_fl[wosz].merge);
     }
     *bf_small_fl[wosz].merge = Next_small (v);
     if (bf_small_fl[wosz].free == Val_NULL) unset_map (wosz);
@@ -1373,7 +1383,7 @@ static void bf_remove (value v)
         n->left = b->left;
         n->right = b->right;
 #ifdef DEBUG
-        Field ((value) b, 0) = Debug_free_major;
+        assign_Field ((value) b, 0, Debug_free_major);
         b->left = b->right = b->next = b->prev =
           (large_free_block *) Debug_free_major;
 #endif
@@ -1400,8 +1410,8 @@ static header_t *bf_split_small (mlsize_t wosz, value v)
 
   CAMLassert (Wosize_val (v) > wosz);
   caml_fl_cur_wsz -= blocksz;
-  Hd_val (v) = Make_header (Wosize_whsize (remwhsz), Abstract_tag, Caml_white);
-  return (header_t *) &Field (v, Wosize_whsize (remwhsz));
+  assign_Hd_val (v, Make_header (Wosize_whsize (remwhsz), Abstract_tag, Caml_white));
+  return (header_t *) Field_address (v, Wosize_whsize (remwhsz));
 }
 
 /* Split the given block, return a new block of the given size.
@@ -1423,11 +1433,11 @@ static header_t *bf_split (mlsize_t wosz, value v)
   caml_fl_cur_wsz -= Whsize_hd (hd);
   if (remwhsz <= Whsize_wosize (BF_NUM_SMALL)){
     /* Same as bf_split_small. */
-    Hd_val (v) = Make_header (Wosize_whsize(remwhsz), Abstract_tag, Caml_white);
+    assign_Hd_val (v, Make_header (Wosize_whsize(remwhsz), Abstract_tag, Caml_white));
   }else{
-    Hd_val (v) = Make_header (Wosize_whsize (remwhsz), 0, Caml_blue);
+    assign_Hd_val (v, Make_header (Wosize_whsize (remwhsz), 0, Caml_blue));
   }
-  return (header_t *) &Field (v, Wosize_whsize (remwhsz));
+  return (header_t *) Field_address (v, Wosize_whsize (remwhsz));
 }
 
 /* Allocate from a large block at [p]. If the node is single and the remaining
@@ -1513,7 +1523,7 @@ static header_t *bf_allocate (mlsize_t wosz)
     if (bf_small_fl[wosz].free != Val_NULL){
       /* fast path: allocate from the corresponding free list */
       block = bf_small_fl[wosz].free;
-      if (bf_small_fl[wosz].merge == &Next_small (block)){
+      if (bf_small_fl[wosz].merge == Next_small_address (block)){
         bf_small_fl[wosz].merge = &bf_small_fl[wosz].free;
       }
       bf_small_fl[wosz].free = Next_small (block);
@@ -1528,7 +1538,7 @@ static header_t *bf_allocate (mlsize_t wosz)
       if (s != 0){
         block = bf_small_fl[s].free;
         CAMLassert (block != Val_NULL);
-        if (bf_small_fl[s].merge == &Next_small (block)){
+        if (bf_small_fl[s].merge == Next_small_address (block)){
           bf_small_fl[s].merge = &bf_small_fl[s].free;
         }
         bf_small_fl[s].free = Next_small (block);
@@ -1624,7 +1634,7 @@ static void bf_reset (void)
     while (1){
       if (p == Val_NULL || Color_val (p) == Caml_blue) break;
       CAMLassert (Color_val (p) == Caml_white);
-      Hd_val (p) = Bluehd_hd (Hd_val (p));
+      assign_Hd_val (p, Bluehd_hd (Hd_val (p)));
       p = Next_small (p);
     }
   }
@@ -1685,16 +1695,16 @@ static header_t *bf_merge_block (value bp, char *limit)
   }
 #endif
   while (wosz > Max_wosize){
-    Hd_val (start) = Make_header (Max_wosize, 0, Caml_blue);
+    assign_Hd_val (start, Make_header (Max_wosize, 0, Caml_blue));
     bf_insert_sweep (start);
     start = Next_in_mem (start);
     wosz -= Whsize_wosize (Max_wosize);
   }
   if (wosz > 0){
-    Hd_val (start) = Make_header (wosz, 0, Caml_blue);
+    assign_Hd_val (start, Make_header (wosz, 0, Caml_blue));
     bf_insert_sweep (start);
   }else{
-    Hd_val (start) = Make_header (0, 0, Caml_white);
+    assign_Hd_val (start, Make_header (0, 0, Caml_white));
     caml_fl_cur_wsz -= Whsize_wosize (0);
   }
   FREELIST_DEBUG_bf_check ();
@@ -1711,7 +1721,7 @@ static void bf_add_blocks (value bp)
       caml_fl_cur_wsz += Whsize_wosize (wosz);
       bf_insert_block ((large_free_block *) bp);
     }else{
-      Hd_val (bp) = Make_header (wosz, Abstract_tag, Caml_white);
+      assign_Hd_val (bp, Make_header (wosz, Abstract_tag, Caml_white));
       bf_insert_remnant_small (bp);
     }
     bp = next;

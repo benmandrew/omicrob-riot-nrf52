@@ -45,13 +45,13 @@ CAMLexport value caml_alloc (mlsize_t wosize, tag_t tag)
     }else{
       Alloc_small (result, wosize, tag);
       if (tag < No_scan_tag){
-        for (i = 0; i < wosize; i++) Field (result, i) = Val_unit;
+        for (i = 0; i < wosize; i++) assign_Field(result, i, Val_unit);
       }
     }
   }else{
     result = caml_alloc_shr (wosize, tag);
     if (tag < No_scan_tag){
-      for (i = 0; i < wosize; i++) Field (result, i) = Val_unit;
+      for (i = 0; i < wosize; i++) assign_Field(result, i, Val_unit);
     }
     result = caml_check_urgent_gc (result);
   }
@@ -88,7 +88,7 @@ CAMLexport value caml_alloc_string (mlsize_t len)
     result = caml_alloc_shr (wosize, String_tag);
     result = caml_check_urgent_gc (result);
   }
-  Field (result, wosize - 1) = 0;
+  assign_Field(result, wosize - 1, 0);
   offset_index = Bsize_wsize (wosize) - 1;
   Byte (result, offset_index) = offset_index - len;
   return result;
@@ -134,10 +134,10 @@ CAMLexport value caml_alloc_array(value (*funct)(char const *),
   result = caml_alloc (nbr, 0);
   for (n = 0; n < nbr; n++) {
     /* The two statements below must be separate because of evaluation
-       order (don't take the address &Field(result, n) before
+       order (don't take the address Field_address(result, n) before
        calling funct, which may cause a GC and move result). */
     v = funct(arr[n]);
-    caml_modify(&Field(result, n), v);
+    caml_modify(Field_address(result, n), v);
   }
   CAMLreturn (result);
 }
@@ -215,10 +215,10 @@ CAMLprim value caml_alloc_dummy_infix(value vsize, value voffset)
      block contains no pointers into the heap.  However, the block
      cannot be marshaled or hashed, because not all closinfo fields
      and infix header fields are correctly initialized. */
-  Closinfo_val(v) = Make_closinfo(0, wosize);
+  assign_Closinfo_val(v, Make_closinfo(0, wosize));
   if (offset > 0) {
     v += Bsize_wsize(offset);
-    Hd_val(v) = Make_header(offset, Infix_tag, Caml_white);
+    assign_Hd_val(v, Make_header(offset, Infix_tag, Caml_white));
   }
   return v;
 }
@@ -251,7 +251,7 @@ CAMLprim value caml_alloc_dummy_infix(value vsize, value voffset)
 //        an integer, and the new "value" is a pointer outside the minor
 //        heap. */
 //     for (i = 0; i < size; i++) {
-//       caml_modify (&Field(dummy, i), Field(clos, i));
+//       caml_modify (Field_address(dummy, i), Field(clos, i));
 //     }
 //   } else {
 //     CAMLassert (tag < No_scan_tag);
@@ -262,7 +262,7 @@ CAMLprim value caml_alloc_dummy_infix(value vsize, value voffset)
 //     /* See comment above why this is safe even if [tag == Closure_tag]
 //        and some of the "values" being copied are actually code pointers. */
 //     for (i = 0; i < size; i++){
-//       caml_modify (&Field(dummy, i), Field(newval, i));
+//       caml_modify (Field_address(dummy, i), Field(newval, i));
 //     }
 //   }
 //   return Val_unit;
@@ -272,6 +272,6 @@ CAMLexport value caml_alloc_some(value v)
 {
   CAMLparam1(v);
   value some = caml_alloc_small(1, 0);
-  Field(some, 0) = v;
+  assign_Field(some, 0, v);
   CAMLreturn(some);
 }
