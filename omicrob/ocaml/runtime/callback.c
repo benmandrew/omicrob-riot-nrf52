@@ -204,24 +204,24 @@ static unsigned int hash_value_name(char const *name)
 
 CAMLprim value caml_register_named_value(value vname, value val)
 {
-  struct named_value * nv;
-  const char * name = Ram_string_val(vname);
-  size_t namelen = strlen(name);
-  unsigned int h = hash_value_name(name);
+  // struct named_value * nv;
+  // const char * name = Ram_string_val(vname);
+  // size_t namelen = strlen(name);
+  // unsigned int h = hash_value_name(name);
 
-  for (nv = named_value_table[h]; nv != NULL; nv = nv->next) {
-    if (strcmp(name, nv->name) == 0) {
-      caml_modify_generational_global_root(&nv->val, val);
-      return Val_unit;
-    }
-  }
-  nv = (struct named_value *)
-          caml_stat_alloc(sizeof(struct named_value) + namelen);
-  memcpy(nv->name, name, namelen + 1);
-  nv->val = val;
-  nv->next = named_value_table[h];
-  named_value_table[h] = nv;
-  caml_register_generational_global_root(&nv->val);
+  // for (nv = named_value_table[h]; nv != NULL; nv = nv->next) {
+  //   if (strcmp(name, nv->name) == 0) {
+  //     caml_modify_generational_global_root(&nv->val, val);
+  //     return Val_unit;
+  //   }
+  // }
+  // nv = (struct named_value *)
+  //         caml_stat_alloc(sizeof(struct named_value) + namelen);
+  // memcpy(nv->name, name, namelen + 1);
+  // nv->val = val;
+  // nv->next = named_value_table[h];
+  // named_value_table[h] = nv;
+  // caml_register_generational_global_root(&nv->val);
   return Val_unit;
 }
 

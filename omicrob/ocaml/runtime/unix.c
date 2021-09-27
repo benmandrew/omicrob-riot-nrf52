@@ -71,6 +71,8 @@
 #define EWOULDBLOCK (-1)
 #endif
 
+CAMLexport void caml_sys_io_error(value arg) {}
+
 int caml_read_fd(int fd, int flags, void * buf, int n)
 {
   int retcode;

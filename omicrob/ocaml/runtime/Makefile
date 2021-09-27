@@ -49,7 +49,7 @@ include $(ROOTDIR)/Makefile.common
 # 	codefrag globroots memprof finalise startup_aux startup_nat roots_nat weak \
 # 	debugger dynlink_nat dynlink skiplist floats md5 backtrace_nat backtrace)
 
-BYTECODE_C_SOURCES :=
+BYTECODE_C_SOURCES := $(addsuffix .c, signals signals_byt unix domain callback)
 
 NATIVE_C_SOURCES :=
 

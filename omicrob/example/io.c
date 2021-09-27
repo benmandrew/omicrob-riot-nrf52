@@ -1,10 +1,8 @@
+// #define CAML_NAME_SPACE
+// #include "caml/mlvalues.h"
 
-#include "values-32.h"
-
-extern void gc(void);
-
-value caml_gc_major(value v)
-{
-  gc();
-  return Val_unit;
-}
+// value print_string(value s) {
+//   const char * bytes = String_val(s);
+//   printf(bytes);
+//   return Val_unit;
+// }

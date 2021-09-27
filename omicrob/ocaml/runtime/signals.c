@@ -58,6 +58,17 @@ CAMLexport int (*caml_sigmask_hook)(int, const sigset_t *, sigset_t *)
   = sigprocmask_wrapper;
 #endif
 
+// ---------------------------------------------
+
+CAMLexport value caml_raise_if_exception(value res)
+{
+  if (Is_exception_result(res)) caml_raise(Extract_exception(res));
+  return res;
+}
+
+// ---------------------------------------------
+
+
 static int check_for_pending_signals(void)
 {
   int i;
@@ -229,18 +240,18 @@ value caml_execute_signal_exn(int signal_number, int in_signal_handler)
 
 void caml_update_young_limit (void)
 {
-  CAMLassert(Caml_state->young_alloc_start <= caml_memprof_young_trigger &&
-             caml_memprof_young_trigger <= Caml_state->young_alloc_end);
-  CAMLassert(Caml_state->young_alloc_start <= Caml_state->young_trigger &&
-             Caml_state->young_trigger < Caml_state->young_alloc_end);
+  // CAMLassert(Caml_state->young_alloc_start <= caml_memprof_young_trigger &&
+  //            caml_memprof_young_trigger <= Caml_state->young_alloc_end);
+  // CAMLassert(Caml_state->young_alloc_start <= Caml_state->young_trigger &&
+  //            Caml_state->young_trigger < Caml_state->young_alloc_end);
 
-  /* The minor heap grows downwards. The first trigger is the largest one. */
-  Caml_state->young_limit =
-    caml_memprof_young_trigger < Caml_state->young_trigger ?
-    Caml_state->young_trigger : caml_memprof_young_trigger;
+  // /* The minor heap grows downwards. The first trigger is the largest one. */
+  // Caml_state->young_limit =
+  //   caml_memprof_young_trigger < Caml_state->young_trigger ?
+  //   Caml_state->young_trigger : caml_memprof_young_trigger;
 
-  if(caml_something_to_do)
-    Caml_state->young_limit = Caml_state->young_alloc_end;
+  // if(caml_something_to_do)
+  //   Caml_state->young_limit = Caml_state->young_alloc_end;
 }
 
 /* Arrange for a garbage collection to be performed as soon as possible */
@@ -264,7 +275,7 @@ value caml_do_pending_actions_exn(void)
   caml_something_to_do = 0;
 
   // Do any pending minor collection or major slice
-  caml_check_urgent_gc(Val_unit);
+  // caml_check_urgent_gc(Val_unit);
 
   caml_update_young_limit();
 
@@ -273,12 +284,12 @@ value caml_do_pending_actions_exn(void)
   if (Is_exception_result(exn)) goto exception;
 
   // Call memprof callbacks
-  exn = caml_memprof_handle_postponed_exn();
-  if (Is_exception_result(exn)) goto exception;
+  // exn = caml_memprof_handle_postponed_exn();
+  // if (Is_exception_result(exn)) goto exception;
 
   // Call finalisers
-  exn = caml_final_do_calls_exn();
-  if (Is_exception_result(exn)) goto exception;
+  // exn = caml_final_do_calls_exn();
+  // if (Is_exception_result(exn)) goto exception;
 
   return Val_unit;
 

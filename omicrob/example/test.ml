@@ -43,9 +43,17 @@ let main =
   Printf.printf "Hello from OMicroB!\n"
   ;; *)
 
+(* let () =
+  print_string "Hello from OMicroB!\n";
+  flush stdout
+  ;; *)
+
+(* external print_string : string -> unit = "print_string"
+
 let main =
-  10 + 5
-  ;;
+  print_string "Hello from OMicroB!\n"
+  ;; *)
 
+(* let main = List.rev [1; 2; 3; 4; 5] ;; *)
 
-
+let main = 10 + 5;;

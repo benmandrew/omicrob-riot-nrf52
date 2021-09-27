@@ -37,25 +37,30 @@ CFLAGS := $(subst -O2,,$(CFLAGS))
 CFLAGS := $(subst -O1,,$(CFLAGS))
 CFLAGS += -Wno-format-nonliteral -Wno-strict-prototypes -lm -s
 
-MAKECONF_CFLAGS = -Wno-format-nonliteral -mno-thumb-interwork -mcpu=cortex-m4 -mlittle-endian \
--mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -ffunction-sections -fdata-sections -fno-builtin \
--fshort-enums -ggdb -g3 -Os -DCPU_MODEL_NRF52840XXAA -DCPU_CORE_CORTEX_M4F -DRIOT_APPLICATION=\"ocaml-nrf52\" \
--DBOARD_NRF52840_MDK=\"nrf52840-mdk\" -DRIOT_BOARD=BOARD_NRF52840_MDK -DCPU_FAM_NRF52 \
--DCPU_NRF52=\"nrf52\" -DRIOT_CPU=CPU_NRF52 -DMCU_NRF52=\"nrf52\" -DRIOT_MCU=MCU_NRF52 \
--fwrapv -fno-common -ffunction-sections -fdata-sections -fno-delete-null-pointer-checks \
--fdiagnostics-color -gz -Wformat=2 -I /home/ben/ocaml-riot-nrf52/sys/newlib_syscalls_default/ --specs=nosys.specs
+# MAKECONF_CFLAGS = -Wno-format-nonliteral -mno-thumb-interwork -mcpu=cortex-m4 -mlittle-endian \
+# -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -ffunction-sections -fdata-sections -fno-builtin \
+# -fshort-enums -ggdb -g3 -Os -DCPU_MODEL_NRF52840XXAA -DCPU_CORE_CORTEX_M4F \
+# -DBOARD_NRF52840_MDK=\"nrf52840-mdk\" -DRIOT_BOARD=BOARD_NRF52840_MDK -DCPU_FAM_NRF52 \
+# -DCPU_NRF52=\"nrf52\" -DRIOT_CPU=CPU_NRF52 -DMCU_NRF52=\"nrf52\" -DRIOT_MCU=MCU_NRF52 \
+# -fwrapv -fno-common -ffunction-sections -fdata-sections -fno-delete-null-pointer-checks \
+# -fdiagnostics-color -gz -Wformat=2 --specs=nosys.specs
 MAKECONF_CC = arm-none-eabi-gcc
 MAKECONF_LD = arm-none-eabi-gcc
 MAKECONF_BUILD_ARCH = arm
 
+STDLIB_DIR := src/stdlib
+STDLIB_FILES := $(wildcard $(STDLIB_DIR)/*.mli) $(wildcard $(STDLIB_DIR)/*.ml)
+STDLIB_OBJS := $(patsubst $(STDLIB_DIR)/%.mli,$(STDLIB_DIR)/%.cmi,$(STDLIB_FILES))
+STDLIB_OBJS := $(patsubst $(STDLIB_DIR)/%.ml,$(STDLIB_DIR)/%.cmo,$(STDLIB_OBJS))
+
 # ----------------------------------------------------------------------------
 
 include etc/Makefile.conf
-
+ 
 all: internals $(TARGETS)
 
 internals: config
-#	$(call compile, lib/extra)
+	$(call compile, lib/extra)
 	$(call compile, src/bc2c)
 #	$(call compile, src/h15ppx)
 #	$(call compile, src/simulators/lcd)
@@ -64,8 +69,7 @@ internals: config
 #	$(call compile, src/simulators/circuit)
 	$(call compile, src/byterun)
 	$(call compile, src/omicrob)
-#	$(call compile, ../RIOT-copy/ocaml-nrf52/ocaml/stdlib)
-#	$(call compile, src/stdlib)
+	$(call compile, src/stdlib)
 	mkdir -p bin/nrf52840-mdk/riotbuild
 	cp stubs/riotbuild.h bin/nrf52840-mdk/riotbuild/riotbuild.h
 	$(MAKE) example
@@ -83,10 +87,18 @@ example:
 	rm example/test.c
 	cp src/byterun/simul/arch-specific.c example/arch-specific.c
 
+# $(STDLIB_DIR)/%.cmo: $(STDLIB_DIR)/%.ml
+# #	ocamlc -nostdlib -c -o $@ $<
+# 	./bin/omicrob -v -c $<
+
+# $(STDLIB_DIR)/%.cmi: $(STDLIB_DIR)/%.mli
+# #	ocamlc -nostdlib -c -o $@ $<
+# 	./bin/omicrob -v -c $<
+
 ## ------------------------------------------------------------------------------
 
 ocaml: ocaml/Makefile.config ocaml/runtime/caml/version.h
-	$(MAKE) -C ocaml/runtime libcamlrun.a
+	$(MAKE) -C ocaml/runtime libcamlrun.a ARCH=arm APPLICATION=$(APPLICATION)
 
 # Makeconf:
 # 	CC="$(MAKECONF_CC)" \
@@ -108,12 +120,12 @@ ocaml/Makefile:
 	sed -i -e 's/otherlibraries="dynlink"/otherlibraries=""/g' ocaml/configure
 	sed -i -e 's/oc_cflags="/oc_cflags="$$OC_CFLAGS /g' ocaml/configure
 	sed -i -e 's/ocamlc_cflags="/ocamlc_cflags="$$OCAMLC_CFLAGS /g' ocaml/configure
-	cp stubs/sys.c ocaml/runtime/sys.c
-	cp stubs/unix.c ocaml/runtime/unix.c
-	cp stubs/interp.c ocaml/runtime/interp.c
-	cp stubs/fail.c ocaml/runtime/fail.c
-	cp stubs/config.h ocaml/runtime/caml/config.h
-	cp stubs/io.h ocaml/runtime/caml/io.h
+#	cp stubs/sys.c ocaml/runtime/sys.c
+#	cp stubs/unix.c ocaml/runtime/unix.c
+#	cp stubs/interp.c ocaml/runtime/interp.c
+#	cp stubs/fail.c ocaml/runtime/fail.c
+#	cp stubs/config.h ocaml/runtime/caml/config.h
+#	cp stubs/io.h ocaml/runtime/caml/io.h
 
 
 ocaml/Makefile.config: ocaml/Makefile
@@ -246,12 +258,13 @@ clean:
 	$(call clean, src/simulators/circuit)
 	$(call clean, src/omicrob)
 #	$(call clean, ../RIOT-copy/ocaml-nrf52/ocaml/stdlib)
-#	$(call clean, src/stdlib)
-#	$(call clean, lib/extra)
+	$(call clean, src/stdlib)
+	$(call clean, lib/extra)
 	$(call clean, targets/avr)
 	$(call clean, targets/pic32)
 	$(MAKE) exampleclean
 	$(MAKE) -C ocaml clean
+	rm -f src/stdlib/*.cmi src/stdlib/*.cmo
 
 exampleclean:
 	rm -f example/test.byte example/test.cmo example/test.cmi \

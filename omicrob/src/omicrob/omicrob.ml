@@ -400,10 +400,10 @@ let () =
     match input_mls with
     | [] -> error "no input file"
     | _ ->
-      (* let vars = [ ("CAMLLIB", libdir) ] in *)
+      let vars = [ ("CAMLLIB", libdir) ] in
       let cmd = [ Config.ocamlc ] @ default_ocamlc_options @ ppx_options @ [ "-c" ] @ mlopts @ input_mls in
       List.iter (fun s -> Printf.printf "%s " s) cmd;
-      run ~vars:[] cmd;
+      run ~vars cmd;
       exit 0;
   )
 
@@ -439,10 +439,9 @@ let () =
     | [] -> error "no input file"
     | _ :: _ :: _ -> error "too many input files"
     | [ path ] ->
-      (* let vars = [ ("CAMLLIB", libdir) ] in *)
+      let vars = [ ("CAMLLIB", libdir) ] in
       let cmd = [ Config.ocamlc ] @ default_ocamlc_options @ ppx_options @ [ "-i" ] @ mlopts @ [ path ] in
-      (* run ~vars cmd; *)
-      run ~vars:[] cmd;
+      run ~vars cmd;
       exit 0;
   )
 
@@ -477,8 +476,11 @@ let () =
 
     available_byte := Some output_path;
 
+    List.iter (fun s -> Printf.printf "%s " s) mlopts;
+    Printf.printf "end\n";
+
     DeviceConfig.compile_ml_to_byte
-      ~ppx_options ~mlopts ~cxxopts ~_local:local ~trace ~verbose
+      ~ppx_options ~mlopts ~cxxopts ~local ~trace ~verbose
       input_paths output_path;
 
     let cmd = [ Config.ocamlclean; output_path; "-o"; output_path ] in
