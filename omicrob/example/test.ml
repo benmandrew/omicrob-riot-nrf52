@@ -1,7 +1,6 @@
 
-(* 
 (* option utilities *)
-let optmin x y =
+(* let optmin x y =
   match x,y with
   | None,a | a,None -> a
   | Some x, Some y-> Some (min x y)
@@ -39,14 +38,17 @@ let main =
   | Some v -> v;
   ;; *)
 
+
 (* let () =
   Printf.printf "Hello from OMicroB!\n"
   ;; *)
+
 
 (* let () =
   print_string "Hello from OMicroB!\n";
   flush stdout
   ;; *)
+
 
 (* external print_string : string -> unit = "print_string"
 
@@ -54,6 +56,8 @@ let main =
   print_string "Hello from OMicroB!\n"
   ;; *)
 
+
 (* let main = List.rev [1; 2; 3; 4; 5] ;; *)
+
 
 let main = 10 + 5;;

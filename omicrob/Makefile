@@ -15,8 +15,7 @@ DEVELHELP ?= 1
 # Change this to 0 show compiler invocation lines by default:
 QUIET ?= 0
 
-BOARD=nrf52840-mdk
-
+BOARD = nrf52840-mdk
 USEMODULE += xtimer
 
 export APPDIR = $(CURDIR)/example
@@ -87,32 +86,10 @@ example:
 	rm example/test.c
 	cp src/byterun/simul/arch-specific.c example/arch-specific.c
 
-# $(STDLIB_DIR)/%.cmo: $(STDLIB_DIR)/%.ml
-# #	ocamlc -nostdlib -c -o $@ $<
-# 	./bin/omicrob -v -c $<
-
-# $(STDLIB_DIR)/%.cmi: $(STDLIB_DIR)/%.mli
-# #	ocamlc -nostdlib -c -o $@ $<
-# 	./bin/omicrob -v -c $<
-
 ## ------------------------------------------------------------------------------
 
 ocaml: ocaml/Makefile.config ocaml/runtime/caml/version.h
 	$(MAKE) -C ocaml/runtime libcamlrun.a ARCH=arm APPLICATION=$(APPLICATION)
-
-# Makeconf:
-# 	CC="$(MAKECONF_CC)" \
-# 	MAKECONF_CFLAGS="$(CFLAGS) $(OC_CFLAGS) $(GLOBAL_CFLAGS) --specs=nosys.specs" \
-# 	AS="$(MAKECONF_AS)" \
-# 	ASPP="$(MAKECONF_CC) $(OC_CFLAGS) -c" \
-# 	ASPPFLAGS="$(ASPPFLAGS)" \
-# 	CPPFLAGS="$(OC_CFLAGS)" \
-# 	LIBS="$(OC_LIBS)"\
-# 	LD="$(MAKECONF_LD)" \
-# 	SYSTEM="eabi" \
-# 	MODEL="none" \
-# 	CAMLRUN="$(CAMLRUN)" \
-# 	./configure.sh
 
 ocaml/Makefile:
 	sed -i -e 's/runtime\/ocamlrun tools/$$(CAMLRUN) tools/g' ocaml/Makefile
@@ -120,12 +97,6 @@ ocaml/Makefile:
 	sed -i -e 's/otherlibraries="dynlink"/otherlibraries=""/g' ocaml/configure
 	sed -i -e 's/oc_cflags="/oc_cflags="$$OC_CFLAGS /g' ocaml/configure
 	sed -i -e 's/ocamlc_cflags="/ocamlc_cflags="$$OCAMLC_CFLAGS /g' ocaml/configure
-#	cp stubs/sys.c ocaml/runtime/sys.c
-#	cp stubs/unix.c ocaml/runtime/unix.c
-#	cp stubs/interp.c ocaml/runtime/interp.c
-#	cp stubs/fail.c ocaml/runtime/fail.c
-#	cp stubs/config.h ocaml/runtime/caml/config.h
-#	cp stubs/io.h ocaml/runtime/caml/io.h
 
 
 ocaml/Makefile.config: ocaml/Makefile
@@ -174,70 +145,6 @@ config:
           exit 1;                                                     \
 	fi
 
-# install: all
-# 	mkdir -p "$(LIBDIR)"
-# 	mkdir -p "$(LIBEXECDIR)"
-# 	mkdir -p "$(INCLUDEDIR)"
-# 	mkdir -p "$(BINDIR)"
-# 	mkdir -p "$(MAN1DIR)"
-# 	mkdir -p "$(MAN3DIR)"
-# 	cp bin/bc2c "$(BINDIR)/bc2c"
-# 	cp bin/h15ppx "$(BINDIR)/h15ppx"
-# 	cp bin/omicrob "$(BINDIR)/omicrob"
-# 	cp bin/*_simulator "$(LIBEXECDIR)/"
-# 	cp doc/bc2c.1 "$(MAN1DIR)/bc2c.1"
-# 	cp doc/omicrob.1 "$(MAN1DIR)/omicrob.1"
-# 	cp lib/stdlib.cma "$(LIBDIR)/stdlib.cma"
-# 	cp lib/libcamlrun.a "$(LIBDIR)/libcamlrun.a"
-# 	cp lib/*.ml "$(LIBDIR)/"
-# 	cp lib/*.mli "$(LIBDIR)/"
-# 	cp lib/*.cmo "$(LIBDIR)/"
-# 	cp lib/*.cmi "$(LIBDIR)/"
-# 	cp lib/lcd_cgrom.txt "$(LIBDIR)/"
-# 	cp -a lib/extra "$(LIBDIR)/"
-# 	cp -a lib/targets "$(LIBDIR)/"
-# 	cp -a src/byterun/vm "$(INCLUDEDIR)/"
-# 	cp -a src/byterun/prims "$(INCLUDEDIR)/"
-# 	cp -a src/byterun/simul "$(INCLUDEDIR)/"
-# 	cp -a src/byterun/avr "$(INCLUDEDIR)" 2> /dev/null
-# 	cp -a src/byterun/pic32 "$(INCLUDEDIR)/" 2> /dev/null
-# 	cp -a src/byterun/stdlib "$(INCLUDEDIR)/"
-
-# uninstall:
-# 	-rm -f "$(BINDIR)/bc2c"
-# 	-rm -f "$(BINDIR)/h15ppx"
-# 	-rm -f "$(BINDIR)/omicrob"
-# 	-rm -f "$(MAN1DIR)/omicrob.1"
-# 	-rm -f "$(MAN1DIR)/bc2c.1"
-# 	-rm -f "$(LIBDIR)/stdlib.cma"
-# 	-rm -f "$(LIBDIR)/libcamlrun.a"
-# 	-rm -f "$(LIBDIR)/"*.ml
-# 	-rm -f "$(LIBDIR)/"*.mli
-# 	-rm -f "$(LIBDIR)/"*.cmi
-# 	-rm -f "$(LIBDIR)/"*.cmo
-# 	-rm -f "$(LIBDIR)/lcd_cgrom.txt"
-# 	-rm -rf "$(LIBDIR)/extra"
-# 	-rm -f "$(LIBEXECDIR)/"*_simulator
-# 	-rm -f "$(INCLUDEDIR)/vm/"*
-# 	-rm -f "$(INCLUDEDIR)/prims/"*
-# 	-rm -f "$(INCLUDEDIR)/simul/"*
-# 	-rm -rf "$(INCLUDEDIR)/$(TARGET)/"*
-# 	-rm -f "$(INCLUDEDIR)/stdlib/"*
-# 	@for mod in $(MAN_3P_BASES); do \
-# 	  rm -f "$(MAN3DIR)/"$$mod.3p;	\
-# 	done
-# 	@for mod in $(MAN_3O_BASES); do \
-# 	  rm -f "$(MAN3DIR)/"$$mod.3o;	\
-# 	done
-# 	@if [ -d "$(LIBDIR)" ]; then rmdir "$(LIBDIR)"; fi
-# 	@if [ -d "$(LIBEXECDIR)" ]; then rmdir "$(LIBEXECDIR)"; fi
-# 	@if [ -d "$(INCLUDEDIR)/vm" ]; then rmdir "$(INCLUDEDIR)/vm"; fi
-# 	@if [ -d "$(INCLUDEDIR)/prims" ]; then rmdir "$(INCLUDEDIR)/prims"; fi
-# 	@if [ -d "$(INCLUDEDIR)/simul" ]; then rmdir "$(INCLUDEDIR)/simul"; fi
-# 	@if [ -d "$(INCLUDEDIR)/$(TARGET)" ]; then rmdir "$(INCLUDEDIR)/$(TARGET)"; fi
-# 	@if [ -d "$(INCLUDEDIR)/stdlib" ]; then rmdir "$(INCLUDEDIR)/stdlib"; fi
-# 	@if [ -d "$(INCLUDEDIR)" ]; then rmdir "$(INCLUDEDIR)"; fi
-
 etc/Makefile.conf:
 	@echo "You must run ./configure before" 1>&2
 	@exit 1
@@ -257,7 +164,6 @@ clean:
 	$(call clean, src/simulators/lcd)
 	$(call clean, src/simulators/circuit)
 	$(call clean, src/omicrob)
-#	$(call clean, ../RIOT-copy/ocaml-nrf52/ocaml/stdlib)
 	$(call clean, src/stdlib)
 	$(call clean, lib/extra)
 	$(call clean, targets/avr)
