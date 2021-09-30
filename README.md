@@ -16,5 +16,6 @@ The projects that need to be updated to 4.12 are:
 ```
 git clone https://github.com/benmandrew/omicrob-riot-nrf52.git
 cd omicrob-riot-nrf52/omicrob
+./configure
 make
 ```
