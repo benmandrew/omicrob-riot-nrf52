@@ -20,12 +20,10 @@ USEMODULE += xtimer
 
 export APPDIR = $(CURDIR)/example
 
-# LINKFLAGS = $(OCAMLDIR)/runtime/libcamlrun.a -lm
-
 include $(RIOTBASE)/Makefile.include
 
 # CFLAGS := $(subst \",",$(CFLAGS))
-# CFLAGS := $(subst ',,$(CFLAGS))
+CFLAGS := $(subst ',,$(CFLAGS))
 CFLAGS := $(subst -Wall,,$(CFLAGS))
 CFLAGS := $(subst -Werror,,$(CFLAGS))
 CFLAGS := $(subst -Wstrict-prototypes,,$(CFLAGS))
@@ -34,7 +32,11 @@ CFLAGS := $(subst -Wold-style-definition,,$(CFLAGS))
 CFLAGS := $(subst -O3,,$(CFLAGS))
 CFLAGS := $(subst -O2,,$(CFLAGS))
 CFLAGS := $(subst -O1,,$(CFLAGS))
-CFLAGS += -Wno-format-nonliteral -Wno-strict-prototypes -lm -s
+CFLAGS += -Wno-format-nonliteral -Wno-strict-prototypes -lm -s --specs=nosys.specs
+
+## For whatever reason the CFLAGS get duplicated which causes issues (specifically in --specs=nosys.specs), so just filter out duplicates
+uniq = $(if $1,$(firstword $1) $(call uniq,$(filter-out $(firstword $1),$1)))
+UNIQ_CFLAGS = ${call uniq, ${CFLAGS}}
 
 # MAKECONF_CFLAGS = -Wno-format-nonliteral -mno-thumb-interwork -mcpu=cortex-m4 -mlittle-endian \
 # -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -ffunction-sections -fdata-sections -fno-builtin \
@@ -59,24 +61,19 @@ include etc/Makefile.conf
 all: internals $(TARGETS)
 
 internals: config
-	$(call compile, lib/extra)
+	mkdir -p bin/nrf52840-mdk/riotbuild
+	cp stubs/riotbuild.h bin/nrf52840-mdk/riotbuild/riotbuild.h
+#	$(call compile, lib/extra)
 	$(call compile, src/bc2c)
-#	$(call compile, src/h15ppx)
-#	$(call compile, src/simulators/lcd)
-#	$(call compile, src/simulators/lcd_16x2)
-#	$(call compile, src/simulators/dip)
-#	$(call compile, src/simulators/circuit)
 	$(call compile, src/byterun)
 	$(call compile, src/omicrob)
 	$(call compile, src/stdlib)
-	mkdir -p bin/nrf52840-mdk/riotbuild
-	cp stubs/riotbuild.h bin/nrf52840-mdk/riotbuild/riotbuild.h
 	$(MAKE) example
 	$(MAKE) ocaml
 	$(MAKE) riot
 
 riot:
-	$(MAKE) -C $(RIOTBASE) -f Makefile.include link CFLAGS='$(CFLAGS)'
+	$(MAKE) -C $(RIOTBASE) -f Makefile.include link CFLAGS="$(UNIQ_CFLAGS)"
 
 example:
 	./bin/omicrob -v -c example/test.ml
@@ -89,7 +86,7 @@ example:
 ## ------------------------------------------------------------------------------
 
 ocaml: ocaml/Makefile.config ocaml/runtime/caml/version.h
-	$(MAKE) -C ocaml/runtime libcamlrun.a ARCH=arm APPLICATION=$(APPLICATION)
+	$(MAKE) -C ocaml/runtime libcamlrun.a ARCH=arm APPLICATION=$(APPLICATION) CFLAGS="$(UNIQ_CFLAGS)"
 
 ocaml/Makefile:
 	sed -i -e 's/runtime\/ocamlrun tools/$$(CAMLRUN) tools/g' ocaml/Makefile
@@ -102,11 +99,10 @@ ocaml/Makefile:
 ocaml/Makefile.config: ocaml/Makefile
 	cd ocaml && \
 		CC="$(MAKECONF_CC)" \
-		CFLAGS="$(MAKECONF_CFLAGS)" \
+		CFLAGS="$(UNIQ_CFLAGS)" \
 		AS="$(MAKECONF_AS)" \
-		ASPP="$(MAKECONF_CC) $(OC_CFLAGS) -c" \
+		ASPP="$(MAKECONF_CC) -c" \
 		ASPPFLAGS="$(ASPPFLAGS)" \
-		CPPFLAGS="$(OC_CFLAGS)" \
 		LIBS="$(OC_LIBS)"\
 		LD="$(MAKECONF_LD)" \
 		SYSTEM="eabi" \
@@ -157,15 +153,10 @@ clean:
 	@rm -rf $(BINDIR)/*
 	@rm -f bin/omicrob
 	$(call clean, src/bc2c)
-	$(call clean, src/h15ppx)
 	$(call clean, src/byterun)
-	$(call clean, src/simulators/dip)
-	$(call clean, src/simulators/lcd_16x2)
-	$(call clean, src/simulators/lcd)
-	$(call clean, src/simulators/circuit)
 	$(call clean, src/omicrob)
 	$(call clean, src/stdlib)
-	$(call clean, lib/extra)
+#	$(call clean, lib/extra)
 	$(call clean, targets/avr)
 	$(call clean, targets/pic32)
 	$(MAKE) exampleclean
